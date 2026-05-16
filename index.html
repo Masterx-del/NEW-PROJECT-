@@ -451,7 +451,6 @@
     <div class="sidebar-footer">
       <button class="btn-green" onclick="saveRecord()">💾 Save to Records</button>
       <button class="btn-dark" onclick="openRecords()">📋 View Records</button>
-      <button style="background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:10px 0;font-weight:700;font-size:12px;cursor:pointer;font-family:'Space Grotesk',sans-serif;width:100%;" onclick="newInvoice()">🆕 New Invoice</button>
       <button class="btn-dark" onclick="window.print()">🖨 Print Invoice</button>
       <button class="btn-red" onclick="downloadPDF()">📄 Download PDF</button>
     </div>
@@ -1356,32 +1355,29 @@ function editRecord(id) {
     }
   }
 
-  // Restore items
-  if (r.savedItems && r.savedItems.length > 0) {
-    items = r.savedItems.map(it => ({ ...it }));
-    idCounter = Math.max(...items.map(i => i.id), idCounter);
-  } else {
-    items = [];
-  }
+  // Restore EXACT saved items — no confirm, no new invoice
+  items = (r.savedItems && r.savedItems.length > 0)
+    ? r.savedItems.map(it => ({ ...it }))
+    : [];
+  idCounter = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
 
   // Currency
   if (r.savedCurrency) setCurrency(r.savedCurrency);
 
-  // Store editing id so Save updates same record
+  // Track which record is being edited
   window._editingRecordId = id;
 
   renderTable();
   recalc();
   closeRecords();
 
-  // Scroll to top of invoice
+  // Scroll invoice into view
   document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Flash indicator at top of invoice
+  // Purple flash border — edit mode indicator
   const paper = document.getElementById('invoice-paper');
   paper.style.outline = '3px solid #6366f1';
-  paper.style.transition = 'outline 0.3s';
-  setTimeout(() => { paper.style.outline = 'none'; }, 2000);
+  setTimeout(() => { paper.style.outline = 'none'; }, 2500);
 }
 
 function closeEdit() { document.getElementById('editModal').classList.remove('show'); }
