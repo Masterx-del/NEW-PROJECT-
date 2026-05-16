@@ -664,6 +664,45 @@
   </div>
 </div>
 
+<!-- ADD ORDER MODAL -->
+<div id="addOrderModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div style="background:var(--card);border-radius:14px;width:100%;max-width:420px;padding:24px;border:1px solid var(--border);margin:20px;">
+    <div class="edit-title">➕ Add Order to Record</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;" id="addOrderClientLabel"></div>
+    <input type="hidden" id="addOrderRecId" />
+    <div class="edit-field">
+      <label>Service Name</label>
+      <input id="aoService" placeholder="e.g. Instagram Followers 1K" />
+    </div>
+    <div style="display:flex;gap:10px;">
+      <div class="edit-field" style="flex:1;">
+        <label>Rate (₹)</label>
+        <input type="number" id="aoRate" placeholder="0" min="0" />
+      </div>
+      <div class="edit-field" style="flex:1;">
+        <label>Qty</label>
+        <input type="number" id="aoQty" value="1" min="1" />
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>Status</label>
+      <select id="aoStatus">
+        <option value="DUE">DUE</option>
+        <option value="PARTIAL">PARTIAL</option>
+        <option value="PAID">PAID</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Note (optional)</label>
+      <input id="aoNote" placeholder="Account link / target URL..." />
+    </div>
+    <div class="edit-actions">
+      <button class="edit-cancel" onclick="closeAddOrder()">Cancel</button>
+      <button class="edit-save" onclick="saveAddOrder()">➕ Add Order</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 // ── FIREBASE SETUP ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1163,8 +1202,35 @@ function renderRecords() {
       </div>
       ${r.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;font-style:italic">📝 ${escHTMLR(r.notes)}</div>` : ''}
       ${expiryHTML}
+
+      <!-- Sub-Orders List -->
+      ${(r.orders && r.orders.length > 0) ? `
+        <div style="margin-top:10px;border-top:1px dashed var(--border);padding-top:8px;">
+          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:6px">📦 Orders (${r.orders.length})</div>
+          ${r.orders.map((o,oi) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg);border-radius:6px;margin-bottom:4px;font-size:11px;">
+              <div>
+                <span style="font-weight:700">${escHTMLR(o.service)}</span>
+                <span style="color:var(--muted);margin-left:6px">×${o.qty}</span>
+                ${o.note ? `<span style="color:var(--muted);margin-left:6px;font-style:italic">${escHTMLR(o.note)}</span>` : ''}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:800;color:var(--accent)">₹${(o.rate * o.qty).toFixed(2)}</span>
+                <span style="font-size:9px;padding:2px 6px;border-radius:10px;font-weight:800;${o.status==='PAID'?'background:#d1fae5;color:#065f46':o.status==='PARTIAL'?'background:#fef3c7;color:#92400e':'background:#fee2e2;color:#991b1b'}">${o.status||'DUE'}</span>
+                <button onclick="toggleOrderStatus(${r.id},${oi})" style="background:none;border:none;cursor:pointer;font-size:13px;" title="Toggle status">🔄</button>
+                <button onclick="deleteOrder(${r.id},${oi})" style="background:#fee2e2;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:11px;color:#dc2626;">✕</button>
+              </div>
+            </div>
+          `).join('')}
+          <div style="text-align:right;font-size:11px;font-weight:800;margin-top:4px;color:var(--text)">
+            Orders Total: ₹${r.orders.reduce((s,o)=>s+(o.rate*o.qty),0).toFixed(2)}
+          </div>
+        </div>
+      ` : ''}
+
       <div class="rec-actions">
         <button class="rec-btn" onclick="editRecord(${r.id})">✏️ Edit</button>
+        <button class="rec-btn" style="background:#eef2ff;color:#4f46e5;border-color:#c7d2fe;" onclick="openAddOrder(${r.id})">➕ Add Order</button>
         <button class="rec-btn success" onclick="markPaid(${r.id})">✅ Mark Paid</button>
         <button class="rec-btn danger" onclick="deleteRecord(${r.id})">🗑 Delete</button>
         ${isExpired ? `<button class="rec-btn danger" onclick="deleteRecord(${r.id})">🧹 Clear</button>` : ''}
@@ -1254,6 +1320,65 @@ function saveEdit() {
 
 function escHTMLR(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
+// ── ADD ORDER ──
+function openAddOrder(id) {
+  const records = getRecords();
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('addOrderRecId').value = id;
+  document.getElementById('addOrderClientLabel').textContent = `Client: ${r.client} · ${r.invNo}`;
+  document.getElementById('aoService').value = '';
+  document.getElementById('aoRate').value = '';
+  document.getElementById('aoQty').value = 1;
+  document.getElementById('aoStatus').value = 'DUE';
+  document.getElementById('aoNote').value = '';
+  const m = document.getElementById('addOrderModal');
+  m.style.display = 'flex';
+}
+
+function closeAddOrder() {
+  document.getElementById('addOrderModal').style.display = 'none';
+}
+
+function saveAddOrder() {
+  const id = parseInt(document.getElementById('addOrderRecId').value);
+  const service = document.getElementById('aoService').value.trim();
+  const rate = parseFloat(document.getElementById('aoRate').value) || 0;
+  const qty = parseInt(document.getElementById('aoQty').value) || 1;
+  const status = document.getElementById('aoStatus').value;
+  const note = document.getElementById('aoNote').value.trim();
+
+  if (!service) { document.getElementById('aoService').focus(); return; }
+
+  const records = getRecords();
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  if (!r.orders) r.orders = [];
+  r.orders.push({ service, rate, qty, status, note, addedAt: new Date().toISOString() });
+  setRecords(records);
+  closeAddOrder();
+  renderRecords();
+}
+
+function toggleOrderStatus(recId, orderIdx) {
+  const records = getRecords();
+  const r = records.find(r => r.id === recId);
+  if (!r || !r.orders || !r.orders[orderIdx]) return;
+  const cycle = { 'DUE': 'PARTIAL', 'PARTIAL': 'PAID', 'PAID': 'DUE' };
+  r.orders[orderIdx].status = cycle[r.orders[orderIdx].status] || 'DUE';
+  setRecords(records);
+  renderRecords();
+}
+
+function deleteOrder(recId, orderIdx) {
+  const records = getRecords();
+  const r = records.find(r => r.id === recId);
+  if (!r || !r.orders) return;
+  r.orders.splice(orderIdx, 1);
+  setRecords(records);
+  renderRecords();
+}
+
 window.saveRecord = saveRecord;
 window.openRecords = openRecords;
 window.closeRecords = closeRecords;
@@ -1264,6 +1389,15 @@ window.closeEdit = closeEdit;
 window.saveEdit = saveEdit;
 window.markPaid = markPaid;
 window.deleteRecord = deleteRecord;
+window.openAddOrder = openAddOrder;
+window.closeAddOrder = closeAddOrder;
+window.saveAddOrder = saveAddOrder;
+window.toggleOrderStatus = toggleOrderStatus;
+window.deleteOrder = deleteOrder;
+
+document.getElementById('addOrderModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddOrder();
+});
 
 // Close modals on backdrop click
 document.getElementById('recordsModal').addEventListener('click', function(e) {
