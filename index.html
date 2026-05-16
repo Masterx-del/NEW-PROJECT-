@@ -281,6 +281,91 @@
 
   .custom-body { padding: 10px; background: var(--card); display: flex; flex-direction: column; gap: 8px; }
   .custom-row { display: flex; gap: 6px; }
+
+  /* ── RECORDS MANAGER ── */
+  #recordsModal {
+    display: none; position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    align-items: flex-start; justify-content: center; padding: 20px;
+    overflow-y: auto;
+  }
+  #recordsModal.show { display: flex; }
+  #recordsPanel {
+    background: var(--card); border-radius: 16px; width: 100%; max-width: 900px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;
+    border: 1px solid var(--border); margin: auto;
+  }
+  .rec-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .dark .rec-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+  .rec-title { color: #fff; font-weight: 900; font-size: 16px; }
+  .rec-title span { color: #818cf8; }
+  .rec-close { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+  .rec-toolbar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .rec-filter-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--input-bg); color: var(--muted); font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: all 0.15s;
+  }
+  .rec-filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .rec-filter-btn.f-paid.active { background: #10b981; border-color: #10b981; }
+  .rec-filter-btn.f-due.active { background: #ef4444; border-color: #ef4444; }
+  .rec-filter-btn.f-partial.active { background: #f59e0b; border-color: #f59e0b; }
+  .rec-search { flex: 1; min-width: 160px; }
+  .rec-body { padding: 16px 20px; max-height: 60vh; overflow-y: auto; }
+  .rec-empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+  .rec-card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--input-bg); position: relative;
+    transition: box-shadow 0.15s;
+  }
+  .rec-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .rec-card.status-paid { border-left: 4px solid #10b981; }
+  .rec-card.status-unpaid { border-left: 4px solid #ef4444; }
+  .rec-card.status-partial { border-left: 4px solid #f59e0b; }
+  .rec-card.expired { opacity: 0.55; }
+  .rec-row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .rec-client { font-weight: 800; font-size: 14px; }
+  .rec-inv { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+  .rec-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .rec-status-badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 900; letter-spacing: 0.05em; }
+  .badge-paid { background: #d1fae5; color: #065f46; }
+  .badge-unpaid { background: #fee2e2; color: #991b1b; }
+  .badge-partial { background: #fef3c7; color: #92400e; }
+  .badge-expired { background: #e2e8f0; color: #475569; font-size: 9px; }
+  .dark .badge-paid { background: rgba(16,185,129,0.2); color: #34d399; }
+  .dark .badge-unpaid { background: rgba(239,68,68,0.2); color: #f87171; }
+  .dark .badge-partial { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .rec-row2 { display: flex; gap: 16px; font-size: 12px; flex-wrap: wrap; }
+  .rec-info-item { display: flex; flex-direction: column; gap: 1px; }
+  .rec-info-label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+  .rec-info-val { font-weight: 700; }
+  .rec-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .rec-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif; background: var(--card); color: var(--text); transition: all 0.15s; }
+  .rec-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .rec-btn.danger:hover { background: #ef4444; border-color: #ef4444; }
+  .rec-btn.success { background: #d1fae5; color: #065f46; border-color: #10b981; }
+  .rec-btn.success:hover { background: #10b981; color: #fff; }
+  .rec-expiry { font-size: 10px; margin-top: 6px; }
+  .expiry-ok { color: #10b981; }
+  .expiry-soon { color: #f59e0b; }
+  .expiry-gone { color: #94a3b8; }
+  .rec-stats { display: flex; gap: 12px; padding: 10px 20px; background: var(--input-bg); border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .stat-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  /* Edit modal */
+  #editModal { display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+  #editModal.show { display: flex; }
+  #editPanel { background: var(--card); border-radius: 14px; width: 100%; max-width: 420px; padding: 24px; border: 1px solid var(--border); }
+  .edit-title { font-weight: 900; font-size: 15px; margin-bottom: 16px; }
+  .edit-field { margin-bottom: 12px; }
+  .edit-field label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .edit-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .edit-save { flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .edit-cancel { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .btn-green { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 10px 0; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
 </style>
 </head>
 <body>
@@ -364,6 +449,8 @@
     </div>
 
     <div class="sidebar-footer">
+      <button class="btn-green" onclick="saveRecord()">💾 Save to Records</button>
+      <button class="btn-dark" onclick="openRecords()">📋 View Records</button>
       <button class="btn-dark" onclick="window.print()">🖨 Print Invoice</button>
       <button class="btn-red" onclick="downloadPDF()">📄 Download PDF</button>
     </div>
@@ -511,6 +598,71 @@
 
 <!-- HAMBURGER (mobile) -->
 <button id="hamburger" onclick="openSidebar()">☰</button>
+
+<!-- RECORDS MODAL -->
+<div id="recordsModal">
+  <div id="recordsPanel">
+    <div class="rec-header">
+      <div class="rec-title">📋 Records <span>Manager</span></div>
+      <button class="rec-close" onclick="closeRecords()">✕</button>
+    </div>
+    <div class="rec-toolbar">
+      <button class="rec-filter-btn active f-all" onclick="setFilter('all',this)">All</button>
+      <button class="rec-filter-btn f-due" onclick="setFilter('unpaid',this)">🔴 Due</button>
+      <button class="rec-filter-btn f-partial" onclick="setFilter('partial',this)">🟡 Partial</button>
+      <button class="rec-filter-btn f-paid" onclick="setFilter('paid',this)">🟢 Paid</button>
+      <input class="rec-search" id="recSearch" placeholder="🔍 Search client / invoice..." oninput="renderRecords()" />
+    </div>
+    <div class="rec-body" id="recBody">
+      <div class="rec-empty">No records saved yet.<br>Fill an invoice and click 💾 Save to Records.</div>
+    </div>
+    <div class="rec-stats" id="recStats"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal">
+  <div id="editPanel">
+    <div class="edit-title">✏️ Edit Record</div>
+    <input type="hidden" id="editId" />
+    <div class="edit-field">
+      <label>Client Name</label>
+      <input id="editClient" placeholder="Client Name" />
+    </div>
+    <div class="edit-field">
+      <label>Invoice No</label>
+      <input id="editInvNo" placeholder="INV-001" />
+    </div>
+    <div class="edit-field">
+      <label>Payment Status</label>
+      <select id="editStatus">
+        <option value="UNPAID">UNPAID</option>
+        <option value="PARTIAL">PARTIAL</option>
+        <option value="PAID">PAID</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Amount Paid</label>
+      <input type="number" id="editPaid" placeholder="0" min="0" />
+    </div>
+    <div class="edit-field">
+      <label>Keep record for (days)</label>
+      <select id="editExpiry">
+        <option value="5">5 days</option>
+        <option value="6">6 days</option>
+        <option value="7" selected>7 days</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Notes</label>
+      <textarea id="editNotes" style="width:100%;height:56px;resize:none"></textarea>
+    </div>
+    <div class="edit-actions">
+      <button class="edit-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="edit-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 // ── FIREBASE SETUP ──
@@ -857,8 +1009,252 @@ function downloadPDF() {
   setTimeout(() => window.print(), 200);
 }
 
-// ── Make functions global for onclick handlers ──
-window.addItem = addItem;
+// ── RECORDS MANAGER ──
+let recFilter = 'all';
+
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('viperRecords') || '[]'); } catch(e) { return []; }
+}
+function setRecords(arr) { localStorage.setItem('viperRecords', JSON.stringify(arr)); }
+
+function saveRecord() {
+  const client = document.getElementById('clientName').value.trim() || 'Unknown Client';
+  const invNo = document.getElementById('invoiceNo').value.trim() || 'INV-???';
+  const date = document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0];
+  const status = document.getElementById('statusBadge').textContent.trim();
+  const grand = document.getElementById('tGrand').textContent;
+  const paid = document.getElementById('tPaid').textContent;
+  const balance = document.getElementById('tBalance').textContent;
+  const notes = document.getElementById('orderNotes').value.trim();
+  const method = document.getElementById('payMethod').value;
+  const paidAmt = parseFloat(document.getElementById('paidInput').value) || 0;
+  const grandAmt = parseFloat(document.getElementById('tGrand').textContent.replace(/[^0-9.]/g,'')) || 0;
+
+  // Default 7 day expiry
+  const expiryDays = 7;
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + expiryDays);
+
+  const records = getRecords();
+  // Check if same invoice already saved → update it
+  const existIdx = records.findIndex(r => r.invNo === invNo);
+  const rec = {
+    id: existIdx >= 0 ? records[existIdx].id : Date.now(),
+    client, invNo, date, status,
+    grand, paid, balance, notes, method,
+    paidAmt, grandAmt,
+    savedAt: new Date().toISOString(),
+    expiryDate: expiryDate.toISOString(),
+    expiryDays
+  };
+
+  if (existIdx >= 0) { records[existIdx] = rec; }
+  else { records.unshift(rec); }
+  setRecords(records);
+
+  // Flash feedback
+  const btn = event.currentTarget;
+  const orig = btn.textContent;
+  btn.textContent = '✅ Saved!';
+  btn.style.background = '#059669';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1800);
+}
+
+function openRecords() {
+  cleanExpired();
+  renderRecords();
+  document.getElementById('recordsModal').classList.add('show');
+}
+function closeRecords() { document.getElementById('recordsModal').classList.remove('show'); }
+
+function cleanExpired() {
+  // Keep expired records visible but marked — don't auto-delete, user decides
+}
+
+function setFilter(f, btn) {
+  recFilter = f;
+  document.querySelectorAll('.rec-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRecords();
+}
+
+function renderRecords() {
+  const records = getRecords();
+  const search = (document.getElementById('recSearch').value || '').toLowerCase();
+  const now = new Date();
+
+  let filtered = records.filter(r => {
+    const matchSearch = !search || r.client.toLowerCase().includes(search) || r.invNo.toLowerCase().includes(search);
+    if (!matchSearch) return false;
+    if (recFilter === 'all') return true;
+    if (recFilter === 'paid') return r.status === 'PAID';
+    if (recFilter === 'unpaid') return r.status === 'UNPAID';
+    if (recFilter === 'partial') return r.status === 'PARTIAL';
+    return true;
+  });
+
+  const body = document.getElementById('recBody');
+
+  if (filtered.length === 0) {
+    body.innerHTML = '<div class="rec-empty">No records found.<br><small>Try changing the filter or search.</small></div>';
+    renderStats(records, now);
+    return;
+  }
+
+  body.innerHTML = filtered.map(r => {
+    const expiry = new Date(r.expiryDate);
+    const daysLeft = Math.ceil((expiry - now) / (1000*60*60*24));
+    const isExpired = daysLeft <= 0;
+    const isSoon = daysLeft > 0 && daysLeft <= 2;
+
+    let expiryHTML = '';
+    if (isExpired) expiryHTML = `<div class="rec-expiry expiry-gone">🗂 Record expired ${Math.abs(daysLeft)}d ago — clear when ready</div>`;
+    else if (isSoon) expiryHTML = `<div class="rec-expiry expiry-soon">⚠️ Expires in ${daysLeft} day${daysLeft>1?'s':''}</div>`;
+    else expiryHTML = `<div class="rec-expiry expiry-ok">✓ Active for ${daysLeft} more day${daysLeft>1?'s':''}</div>`;
+
+    const statusClass = r.status === 'PAID' ? 'status-paid' : r.status === 'PARTIAL' ? 'status-partial' : 'status-unpaid';
+    const badgeClass = r.status === 'PAID' ? 'badge-paid' : r.status === 'PARTIAL' ? 'badge-partial' : 'badge-unpaid';
+
+    return `<div class="rec-card ${statusClass} ${isExpired?'expired':''}" id="rec-${r.id}">
+      <div class="rec-row1">
+        <div>
+          <div class="rec-client">${escHTMLR(r.client)}</div>
+          <div class="rec-inv">${escHTMLR(r.invNo)} · ${r.date}</div>
+        </div>
+        <div class="rec-badges">
+          <span class="rec-status-badge ${badgeClass}">${r.status}</span>
+          ${isExpired ? '<span class="rec-status-badge badge-expired">EXPIRED</span>' : ''}
+        </div>
+      </div>
+      <div class="rec-row2">
+        <div class="rec-info-item">
+          <span class="rec-info-label">Total</span>
+          <span class="rec-info-val">${r.grand}</span>
+        </div>
+        <div class="rec-info-item">
+          <span class="rec-info-label">Paid</span>
+          <span class="rec-info-val" style="color:#10b981">${r.paid}</span>
+        </div>
+        <div class="rec-info-item">
+          <span class="rec-info-label">Balance</span>
+          <span class="rec-info-val" style="color:#ef4444">${r.balance}</span>
+        </div>
+        <div class="rec-info-item">
+          <span class="rec-info-label">Method</span>
+          <span class="rec-info-val" style="font-size:11px">${r.method}</span>
+        </div>
+      </div>
+      ${r.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;font-style:italic">📝 ${escHTMLR(r.notes)}</div>` : ''}
+      ${expiryHTML}
+      <div class="rec-actions">
+        <button class="rec-btn" onclick="editRecord(${r.id})">✏️ Edit</button>
+        <button class="rec-btn success" onclick="markPaid(${r.id})">✅ Mark Paid</button>
+        <button class="rec-btn danger" onclick="deleteRecord(${r.id})">🗑 Delete</button>
+        ${isExpired ? `<button class="rec-btn danger" onclick="deleteRecord(${r.id})">🧹 Clear</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  renderStats(records, now);
+}
+
+function renderStats(records, now) {
+  const total = records.length;
+  const paid = records.filter(r => r.status==='PAID').length;
+  const due = records.filter(r => r.status==='UNPAID').length;
+  const partial = records.filter(r => r.status==='PARTIAL').length;
+  const expired = records.filter(r => new Date(r.expiryDate) < now).length;
+  document.getElementById('recStats').innerHTML = `
+    <div class="stat-chip"><div class="stat-dot" style="background:#6366f1"></div>${total} Total</div>
+    <div class="stat-chip"><div class="stat-dot" style="background:#10b981"></div>${paid} Paid</div>
+    <div class="stat-chip"><div class="stat-dot" style="background:#ef4444"></div>${due} Due</div>
+    <div class="stat-chip"><div class="stat-dot" style="background:#f59e0b"></div>${partial} Partial</div>
+    ${expired>0?`<div class="stat-chip"><div class="stat-dot" style="background:#94a3b8"></div>${expired} Expired</div>`:''}
+  `;
+}
+
+function markPaid(id) {
+  const records = getRecords();
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  r.status = 'PAID';
+  r.paid = r.grand;
+  r.balance = '₹0.00';
+  r.paidAmt = r.grandAmt;
+  setRecords(records);
+  renderRecords();
+}
+
+function deleteRecord(id) {
+  if (!confirm('Delete this record?')) return;
+  setRecords(getRecords().filter(r => r.id !== id));
+  renderRecords();
+}
+
+function editRecord(id) {
+  const records = getRecords();
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('editId').value = id;
+  document.getElementById('editClient').value = r.client;
+  document.getElementById('editInvNo').value = r.invNo;
+  document.getElementById('editStatus').value = r.status;
+  document.getElementById('editPaid').value = r.paidAmt || 0;
+  document.getElementById('editNotes').value = r.notes || '';
+  document.getElementById('editExpiry').value = r.expiryDays || 7;
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeEdit() { document.getElementById('editModal').classList.remove('show'); }
+
+function saveEdit() {
+  const id = parseInt(document.getElementById('editId').value);
+  const records = getRecords();
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+
+  r.client = document.getElementById('editClient').value.trim() || r.client;
+  r.invNo = document.getElementById('editInvNo').value.trim() || r.invNo;
+  r.status = document.getElementById('editStatus').value;
+  r.paidAmt = parseFloat(document.getElementById('editPaid').value) || 0;
+  r.notes = document.getElementById('editNotes').value.trim();
+  const days = parseInt(document.getElementById('editExpiry').value) || 7;
+  r.expiryDays = days;
+  // Recalculate expiry from save date
+  const savedAt = new Date(r.savedAt);
+  const expiry = new Date(savedAt);
+  expiry.setDate(expiry.getDate() + days);
+  r.expiryDate = expiry.toISOString();
+  // Update display values
+  r.paid = `₹${r.paidAmt.toFixed(2)}`;
+  r.balance = `₹${Math.max(0, r.grandAmt - r.paidAmt).toFixed(2)}`;
+  if (r.paidAmt >= r.grandAmt && r.grandAmt > 0) r.status = 'PAID';
+
+  setRecords(records);
+  closeEdit();
+  renderRecords();
+}
+
+function escHTMLR(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+window.saveRecord = saveRecord;
+window.openRecords = openRecords;
+window.closeRecords = closeRecords;
+window.setFilter = setFilter;
+window.renderRecords = renderRecords;
+window.editRecord = editRecord;
+window.closeEdit = closeEdit;
+window.saveEdit = saveEdit;
+window.markPaid = markPaid;
+window.deleteRecord = deleteRecord;
+
+// Close modals on backdrop click
+document.getElementById('recordsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeRecords();
+});
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
 window.addCustomItem = addCustomItem;
 window.removeItem = removeItem;
 window.changeQty = changeQty;
