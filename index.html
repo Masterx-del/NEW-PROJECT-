@@ -1208,17 +1208,44 @@ function renderRecords() {
         <div style="margin-top:10px;border-top:1px dashed var(--border);padding-top:8px;">
           <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:6px">📦 Orders (${r.orders.length})</div>
           ${r.orders.map((o,oi) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg);border-radius:6px;margin-bottom:4px;font-size:11px;">
-              <div>
-                <span style="font-weight:700">${escHTMLR(o.service)}</span>
-                <span style="color:var(--muted);margin-left:6px">×${o.qty}</span>
-                ${o.note ? `<span style="color:var(--muted);margin-left:6px;font-style:italic">${escHTMLR(o.note)}</span>` : ''}
+            <div style="background:var(--bg);border-radius:8px;margin-bottom:6px;padding:7px 10px;border:1px solid var(--border);">
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                <input
+                  value="${escHTMLR(o.service)}"
+                  placeholder="Service name"
+                  style="flex:2;min-width:100px;font-weight:700;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px;color:var(--text);outline:none;font-family:'Space Grotesk',sans-serif;"
+                  oninput="editOrderField(${r.id},${oi},'service',this.value)"
+                />
+                <input
+                  type="number" value="${o.rate}" min="0"
+                  placeholder="Rate"
+                  style="width:70px;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px;color:var(--text);outline:none;font-family:'JetBrains Mono',monospace;font-weight:700;"
+                  oninput="editOrderField(${r.id},${oi},'rate',this.value)"
+                />
+                <input
+                  type="number" value="${o.qty}" min="1"
+                  placeholder="Qty"
+                  style="width:48px;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);outline:none;font-weight:700;"
+                  oninput="editOrderField(${r.id},${oi},'qty',this.value)"
+                />
+                <select
+                  style="font-size:10px;font-weight:800;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);cursor:pointer;font-family:'Space Grotesk',sans-serif;"
+                  onchange="editOrderField(${r.id},${oi},'status',this.value)"
+                >
+                  <option value="DUE" ${(o.status||'DUE')==='DUE'?'selected':''}>🔴 DUE</option>
+                  <option value="PARTIAL" ${o.status==='PARTIAL'?'selected':''}>🟡 PARTIAL</option>
+                  <option value="PAID" ${o.status==='PAID'?'selected':''}>🟢 PAID</option>
+                </select>
+                <button onclick="deleteOrder(${r.id},${oi})" style="background:#fee2e2;border:none;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px;color:#dc2626;flex-shrink:0;">🗑</button>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-weight:800;color:var(--accent)">₹${(o.rate * o.qty).toFixed(2)}</span>
-                <span style="font-size:9px;padding:2px 6px;border-radius:10px;font-weight:800;${o.status==='PAID'?'background:#d1fae5;color:#065f46':o.status==='PARTIAL'?'background:#fef3c7;color:#92400e':'background:#fee2e2;color:#991b1b'}">${o.status||'DUE'}</span>
-                <button onclick="toggleOrderStatus(${r.id},${oi})" style="background:none;border:none;cursor:pointer;font-size:13px;" title="Toggle status">🔄</button>
-                <button onclick="deleteOrder(${r.id},${oi})" style="background:#fee2e2;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:11px;color:#dc2626;">✕</button>
+              <input
+                value="${escHTMLR(o.note||'')}"
+                placeholder="Note / account link..."
+                style="width:100%;margin-top:5px;font-size:10px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 7px;color:var(--muted);outline:none;font-family:'Space Grotesk',sans-serif;"
+                oninput="editOrderField(${r.id},${oi},'note',this.value)"
+              />
+              <div style="text-align:right;font-size:10px;color:var(--accent);font-weight:800;margin-top:4px;">
+                ₹${((parseFloat(o.rate)||0) * (parseInt(o.qty)||1)).toFixed(2)}
               </div>
             </div>
           `).join('')}
@@ -1379,6 +1406,18 @@ function deleteOrder(recId, orderIdx) {
   renderRecords();
 }
 
+function editOrderField(recId, orderIdx, field, value) {
+  const records = getRecords();
+  const r = records.find(r => r.id === recId);
+  if (!r || !r.orders || !r.orders[orderIdx]) return;
+  if (field === 'rate') r.orders[orderIdx].rate = parseFloat(value) || 0;
+  else if (field === 'qty') r.orders[orderIdx].qty = parseInt(value) || 1;
+  else r.orders[orderIdx][field] = value;
+  setRecords(records);
+  // Only re-render for status/delete — not on text input (would lose focus)
+  if (field === 'status') renderRecords();
+}
+
 window.saveRecord = saveRecord;
 window.openRecords = openRecords;
 window.closeRecords = closeRecords;
@@ -1394,6 +1433,7 @@ window.closeAddOrder = closeAddOrder;
 window.saveAddOrder = saveAddOrder;
 window.toggleOrderStatus = toggleOrderStatus;
 window.deleteOrder = deleteOrder;
+window.editOrderField = editOrderField;
 
 document.getElementById('addOrderModal').addEventListener('click', function(e) {
   if (e.target === this) closeAddOrder();
