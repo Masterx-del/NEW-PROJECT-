@@ -881,6 +881,8 @@ function removeItem(id) { items = items.filter(i => i.id !== id); renderTable();
 function changeQty(id, delta) { const it = items.find(i => i.id === id); if (it) { it.qty = Math.max(1, it.qty + delta); } renderTable(); recalc(); }
 function setQty(id, val) { const it = items.find(i => i.id === id); if (it) { it.qty = Math.max(1, parseInt(val)||1); } recalc(); }
 function setNote(id, val) { const it = items.find(i => i.id === id); if (it) it.note = val; }
+function setName(id, val) { const it = items.find(i => i.id === id); if (it) it.name = val; }
+function setRate(id, val) { const it = items.find(i => i.id === id); if (it) { it.baseRate = parseFloat(val) || 0; recalc(); } }
 
 function convert(inr) { return currency === 'USD' ? inr / exchangeRate : inr; }
 function fmt(amount) {
@@ -902,7 +904,13 @@ function renderTable() {
     return `<tr>
       <td style="text-align:center;font-weight:700;color:var(--muted)">${idx+1}</td>
       <td>
-        <div style="font-weight:700">${item.name}</div>
+        <input
+          style="font-weight:700;font-size:12px;background:transparent;border:none;border-bottom:1px dashed var(--border);outline:none;width:100%;color:var(--text);padding:2px 0;"
+          value="${escHTML(item.name)}"
+          placeholder="Service name"
+          oninput="setName(${item.id},this.value)"
+          title="Click to edit service name"
+        />
         <input class="note-input" value="${escHTML(item.note)}" placeholder="Account Link / Target URL..."
           oninput="setNote(${item.id},this.value)" />
       </td>
@@ -914,7 +922,16 @@ function renderTable() {
           <button class="qty-btn qty-plus" onclick="changeQty(${item.id},1)">+</button>
         </div>
       </td>
-      <td style="text-align:right;color:var(--muted);font-weight:600">${fmt(rate)}</td>
+      <td style="text-align:right">
+        <input
+          type="number"
+          style="width:80px;text-align:right;font-weight:700;font-size:12px;background:transparent;border:none;border-bottom:1px dashed var(--border);outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;"
+          value="${item.baseRate}"
+          min="0"
+          oninput="setRate(${item.id},this.value)"
+          title="Click to edit rate"
+        />
+      </td>
       <td style="text-align:right;font-weight:800">${fmt(total)}</td>
       <td style="text-align:center"><button class="del-btn" onclick="removeItem(${item.id})">🗑</button></td>
     </tr>`;
@@ -1260,6 +1277,8 @@ window.removeItem = removeItem;
 window.changeQty = changeQty;
 window.setQty = setQty;
 window.setNote = setNote;
+window.setName = setName;
+window.setRate = setRate;
 window.recalc = recalc;
 window.toggleCat = toggleCat;
 window.toggleCustom = toggleCustom;
