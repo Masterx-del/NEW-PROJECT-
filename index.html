@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VIPER STORE POS – Invoice</title>
+<title>VIPER STORE POS – Invoice + Khatabook</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
@@ -19,6 +18,7 @@
     --accent-light: #eef2ff;
     --green: #10b981;
     --red: #ef4444;
+    --orange: #f59e0b;
     --sidebar-w: 320px;
   }
   .dark {
@@ -52,8 +52,31 @@
   .sidebar-footer { padding: 10px 14px; border-top: 1px solid var(--border); background: var(--input-bg); display: flex; flex-direction: column; gap: 6px; }
 
   /* ── MAIN ── */
-  #main { flex: 1; overflow-y: auto; padding: 24px 32px; background: var(--bg); }
-  @media (max-width: 768px) { #main { padding: 12px; } }
+  #main { flex: 1; overflow-y: auto; padding: 0; background: var(--bg); display: flex; flex-direction: column; }
+
+  /* ── TOP NAV TABS ── */
+  .top-tabs {
+    display: flex; background: var(--card); border-bottom: 2px solid var(--border);
+    padding: 0 24px; gap: 0; position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    padding: 14px 20px; border: none; background: transparent; cursor: pointer;
+    font-weight: 700; font-size: 13px; color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover { color: var(--text); }
+
+  /* ── TAB CONTENT ── */
+  .tab-pane { display: none; flex: 1; }
+  .tab-pane.active { display: block; }
+
+  /* ── INVOICE AREA ── */
+  #tab-invoice { padding: 24px 32px; }
+  @media (max-width: 768px) { #tab-invoice { padding: 12px; } }
 
   /* ── INVOICE PAPER ── */
   #invoice-paper {
@@ -64,6 +87,149 @@
     border: 1px solid var(--border);
   }
   @media (max-width: 600px) { #invoice-paper { padding: 18px 14px; } }
+
+  /* ── KHATABOOK AREA ── */
+  #tab-khata { padding: 24px 32px; }
+  @media (max-width: 768px) { #tab-khata { padding: 12px; } }
+
+  .khata-container { max-width: 960px; margin: 0 auto; }
+
+  /* ── KHATA SUMMARY CARDS ── */
+  .khata-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .summary-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .summary-card .s-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .summary-card .s-val { font-size: 22px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+  .summary-card .s-sub { font-size: 10px; color: var(--muted); }
+  .summary-card.red .s-val { color: var(--red); }
+  .summary-card.green .s-val { color: var(--green); }
+  .summary-card.blue .s-val { color: var(--accent); }
+  .summary-card.orange .s-val { color: var(--orange); }
+
+  /* ── KHATA LAYOUT ── */
+  .khata-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+  @media (max-width: 768px) { .khata-layout { grid-template-columns: 1fr; } }
+
+  /* ── CLIENT PANEL ── */
+  .client-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); }
+  .add-client-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 800; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .client-search { padding: 10px; border-bottom: 1px solid var(--border); }
+  .client-search input { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 12px; color: var(--text); outline: none; font-family: 'Space Grotesk', sans-serif; }
+  .client-search input:focus { border-color: var(--accent); }
+  #clientList { overflow-y: auto; max-height: 420px; }
+  .client-item {
+    padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.15s;
+  }
+  .client-item:hover { background: var(--input-bg); }
+  .client-item.active { background: var(--accent-light); border-left: 3px solid var(--accent); }
+  .dark .client-item.active { background: rgba(99,102,241,0.15); }
+  .ci-name { font-weight: 700; font-size: 12px; }
+  .ci-phone { font-size: 10px; color: var(--muted); }
+  .ci-balance { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .ci-balance.due { color: var(--red); }
+  .ci-balance.advance { color: var(--green); }
+  .ci-balance.clear { color: var(--muted); }
+
+  /* ── LEDGER PANEL ── */
+  .ledger-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  .ledger-client-header {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  }
+  .lch-name { font-size: 20px; font-weight: 900; }
+  .lch-details { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .lch-balance-box { text-align: right; }
+  .lch-balance-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .lch-balance-amount { font-size: 24px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+  .lch-balance-amount.due { color: var(--red); }
+  .lch-balance-amount.advance { color: var(--green); }
+  .lch-balance-amount.clear { color: var(--muted); }
+
+  /* ── ADD TRANSACTION ── */
+  .add-txn-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  }
+  .add-txn-title { font-weight: 800; font-size: 12px; margin-bottom: 10px; color: var(--accent); }
+  .txn-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
+  @media (max-width: 600px) { .txn-form { grid-template-columns: 1fr 1fr; } }
+  .txn-field label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+  .txn-field input, .txn-field select { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 12px; color: var(--text); outline: none; font-family: 'Space Grotesk', sans-serif; width: 100%; }
+  .txn-field input:focus, .txn-field select:focus { border-color: var(--accent); }
+  .txn-submit-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 8px 16px; font-weight: 800; font-size: 12px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; white-space: nowrap; align-self: flex-end;
+    height: 34px;
+  }
+  .txn-type-toggle { display: flex; gap: 4px; }
+  .txn-type-btn {
+    flex: 1; padding: 7px 0; border: 1px solid var(--border); border-radius: 6px;
+    font-weight: 700; font-size: 11px; cursor: pointer; background: var(--input-bg);
+    color: var(--muted); font-family: 'Space Grotesk', sans-serif; transition: all 0.15s;
+  }
+  .txn-type-btn.active-received { background: #d1fae5; color: #065f46; border-color: #10b981; }
+  .txn-type-btn.active-paid { background: #fee2e2; color: #991b1b; border-color: var(--red); }
+
+  /* ── TRANSACTION TABLE ── */
+  .txn-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .txn-table-header { padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); }
+  .whatsapp-btn {
+    background: #25d366; color: #fff; border: none; border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 800; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; gap: 4px;
+  }
+  .txn-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .txn-table th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--input-bg); }
+  .txn-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .txn-table tr:last-child td { border-bottom: none; }
+  .txn-empty { text-align: center; padding: 36px; color: var(--muted); font-style: italic; }
+  .txn-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 800;
+  }
+  .txn-badge.received { background: #d1fae5; color: #065f46; }
+  .txn-badge.paid { background: #fee2e2; color: #991b1b; }
+  .txn-badge.invoice { background: #dbeafe; color: #1e40af; }
+  .txn-amount { font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .txn-amount.credit { color: var(--green); }
+  .txn-amount.debit { color: var(--red); }
+  .txn-del-btn { background: #fee2e2; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; color: var(--red); font-size: 11px; }
+
+  /* ── NO CLIENT SELECTED ── */
+  .no-client-msg { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 60px 24px; text-align: center; color: var(--muted); }
+  .no-client-msg .big-icon { font-size: 48px; margin-bottom: 12px; }
+  .no-client-msg p { font-size: 13px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--card); border-radius: 14px; padding: 24px; width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 1px solid var(--border); }
+  .modal-title { font-weight: 900; font-size: 16px; margin-bottom: 16px; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+  .modal-field input { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 13px; color: var(--text); outline: none; font-family: 'Space Grotesk', sans-serif; }
+  .modal-field input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-save-btn { flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .modal-cancel-btn { flex: 1; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+
+  /* ── EXPORT BTN ── */
+  .export-csv-btn {
+    background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+    color: var(--text); font-family: 'Space Grotesk', sans-serif;
+    display: flex; align-items: center; gap: 4px;
+  }
 
   /* ── CARD / SECTION ── */
   .section-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
@@ -127,7 +293,7 @@
     transition: border-color 0.15s;
   }
   input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-  input[type="transparent"], .transparent-input {
+  .transparent-input {
     background: transparent; border: none; font-weight: 700;
     font-size: 12px; color: var(--text); outline: none;
   }
@@ -144,12 +310,12 @@
 
   /* ── INVOICE TABLE ── */
   .inv-table-wrap { border: 2px solid var(--text); border-radius: 6px; overflow: hidden; margin-bottom: 24px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
-  th { padding: 10px 12px; border-bottom: 2px solid var(--text); border-right: 1px solid var(--border); background: var(--input-bg); font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; }
-  th:last-child { border-right: none; }
-  td { padding: 10px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: middle; }
-  td:last-child { border-right: none; }
-  tr:last-child td { border-bottom: none; }
+  table.inv-tbl { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
+  table.inv-tbl th { padding: 10px 12px; border-bottom: 2px solid var(--text); border-right: 1px solid var(--border); background: var(--input-bg); font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; }
+  table.inv-tbl th:last-child { border-right: none; }
+  table.inv-tbl td { padding: 10px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: middle; }
+  table.inv-tbl td:last-child { border-right: none; }
+  table.inv-tbl tr:last-child td { border-bottom: none; }
   .empty-row td { text-align: center; padding: 36px 0; color: var(--muted); font-style: italic; }
 
   /* ── QTY CONTROL ── */
@@ -226,6 +392,7 @@
   .btn-dark { background: #1e293b; color: #fff; border: none; border-radius: 8px; padding: 10px 0; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
   .btn-red { background: #dc2626; color: #fff; border: none; border-radius: 8px; padding: 10px 0; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
   .btn-purple { background: #8b5cf6; color: #fff; border: none; border-radius: 6px; padding: 8px 0; font-weight: 800; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
+  .btn-green { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 10px 0; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
   .del-btn { background: #fee2e2; border: none; border-radius: 6px; padding: 5px 7px; cursor: pointer; color: #dc2626; font-size: 13px; }
 
   /* ── THEME BTN ── */
@@ -254,16 +421,18 @@
     #overlay { display: block; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     #overlay.show { opacity: 1; pointer-events: auto; }
     #hamburger { display: flex; }
-    #main { padding: 12px 10px 80px; }
+    #tab-invoice, #tab-khata { padding: 12px 10px 80px; }
   }
 
   /* ── PRINT ── */
   @media print {
-    #sidebar, #hamburger, #overlay { display: none !important; }
+    #sidebar, #hamburger, #overlay, .top-tabs { display: none !important; }
     #main { padding: 0; overflow: visible; }
     #app { display: block; height: auto; overflow: visible; }
     #invoice-paper { box-shadow: none; border: none; padding: 20px; }
     body { background: white; }
+    .tab-pane { display: block !important; }
+    #tab-khata { display: none !important; }
   }
 
   /* ── MISC ── */
@@ -273,99 +442,25 @@
   .words-label { font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
   .words-text { font-weight: 700; font-size: 13px; font-style: italic; }
   .rate-label { font-size: 10px; color: var(--muted); text-align: center; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
-
   .calc-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .calc-col { flex: 1; }
   .calc-col-label { font-size: 9px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
   .paid-input { background: #f0fdf4 !important; border: 1px solid #86efac !important; color: #16a34a !important; font-weight: 700 !important; }
-
   .custom-body { padding: 10px; background: var(--card); display: flex; flex-direction: column; gap: 8px; }
   .custom-row { display: flex; gap: 6px; }
 
-  /* ── RECORDS MANAGER ── */
-  #recordsModal {
-    display: none; position: fixed; inset: 0; z-index: 999;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-    align-items: flex-start; justify-content: center; padding: 20px;
-    overflow-y: auto;
+  /* ── KHATA BADGE on tab ── */
+  .tab-badge { background: var(--red); color: #fff; border-radius: 99px; padding: 1px 6px; font-size: 9px; font-weight: 900; }
+
+  /* ── SAVE TO KHATA BTN ── */
+  .save-khata-row { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+  .save-khata-btn {
+    background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none;
+    border-radius: 8px; padding: 10px 16px; font-weight: 800; font-size: 12px;
+    cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+    display: flex; align-items: center; gap: 6px;
   }
-  #recordsModal.show { display: flex; }
-  #recordsPanel {
-    background: var(--card); border-radius: 16px; width: 100%; max-width: 900px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;
-    border: 1px solid var(--border); margin: auto;
-  }
-  .rec-header {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .dark .rec-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
-  .rec-title { color: #fff; font-weight: 900; font-size: 16px; }
-  .rec-title span { color: #818cf8; }
-  .rec-close { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-  .rec-toolbar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .rec-filter-btn {
-    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-    background: var(--input-bg); color: var(--muted); font-size: 11px; font-weight: 700;
-    cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: all 0.15s;
-  }
-  .rec-filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .rec-filter-btn.f-paid.active { background: #10b981; border-color: #10b981; }
-  .rec-filter-btn.f-due.active { background: #ef4444; border-color: #ef4444; }
-  .rec-filter-btn.f-partial.active { background: #f59e0b; border-color: #f59e0b; }
-  .rec-search { flex: 1; min-width: 160px; }
-  .rec-body { padding: 16px 20px; max-height: 60vh; overflow-y: auto; }
-  .rec-empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
-  .rec-card {
-    border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
-    margin-bottom: 10px; background: var(--input-bg); position: relative;
-    transition: box-shadow 0.15s;
-  }
-  .rec-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-  .rec-card.status-paid { border-left: 4px solid #10b981; }
-  .rec-card.status-unpaid { border-left: 4px solid #ef4444; }
-  .rec-card.status-partial { border-left: 4px solid #f59e0b; }
-  .rec-card.expired { opacity: 0.55; }
-  .rec-row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-  .rec-client { font-weight: 800; font-size: 14px; }
-  .rec-inv { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
-  .rec-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .rec-status-badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 900; letter-spacing: 0.05em; }
-  .badge-paid { background: #d1fae5; color: #065f46; }
-  .badge-unpaid { background: #fee2e2; color: #991b1b; }
-  .badge-partial { background: #fef3c7; color: #92400e; }
-  .badge-expired { background: #e2e8f0; color: #475569; font-size: 9px; }
-  .dark .badge-paid { background: rgba(16,185,129,0.2); color: #34d399; }
-  .dark .badge-unpaid { background: rgba(239,68,68,0.2); color: #f87171; }
-  .dark .badge-partial { background: rgba(245,158,11,0.2); color: #fbbf24; }
-  .rec-row2 { display: flex; gap: 16px; font-size: 12px; flex-wrap: wrap; }
-  .rec-info-item { display: flex; flex-direction: column; gap: 1px; }
-  .rec-info-label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-  .rec-info-val { font-weight: 700; }
-  .rec-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .rec-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif; background: var(--card); color: var(--text); transition: all 0.15s; }
-  .rec-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .rec-btn.danger:hover { background: #ef4444; border-color: #ef4444; }
-  .rec-btn.success { background: #d1fae5; color: #065f46; border-color: #10b981; }
-  .rec-btn.success:hover { background: #10b981; color: #fff; }
-  .rec-expiry { font-size: 10px; margin-top: 6px; }
-  .expiry-ok { color: #10b981; }
-  .expiry-soon { color: #f59e0b; }
-  .expiry-gone { color: #94a3b8; }
-  .rec-stats { display: flex; gap: 12px; padding: 10px 20px; background: var(--input-bg); border-top: 1px solid var(--border); flex-wrap: wrap; }
-  .stat-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
-  .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  /* Edit modal */
-  #editModal { display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
-  #editModal.show { display: flex; }
-  #editPanel { background: var(--card); border-radius: 14px; width: 100%; max-width: 420px; padding: 24px; border: 1px solid var(--border); }
-  .edit-title { font-weight: 900; font-size: 15px; margin-bottom: 16px; }
-  .edit-field { margin-bottom: 12px; }
-  .edit-field label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
-  .edit-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .edit-save { flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
-  .edit-cancel { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
-  .btn-green { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 10px 0; font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; width: 100%; }
+  .save-khata-hint { font-size: 10px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -449,8 +544,6 @@
     </div>
 
     <div class="sidebar-footer">
-      <button class="btn-green" onclick="saveRecord()">💾 Save to Records</button>
-      <button class="btn-dark" onclick="openRecords()">📋 View Records</button>
       <button class="btn-dark" onclick="window.print()">🖨 Print Invoice</button>
       <button class="btn-red" onclick="downloadPDF()">📄 Download PDF</button>
     </div>
@@ -459,246 +552,248 @@
   <!-- OVERLAY (mobile) -->
   <div id="overlay" onclick="closeSidebar()"></div>
 
-  <!-- MAIN INVOICE AREA -->
+  <!-- MAIN AREA -->
   <div id="main">
-    <div id="invoice-paper">
 
-      <!-- Watermark -->
-      <div id="watermark">UNPAID</div>
-
-      <!-- Header -->
-      <div class="inv-header">
-        <div class="inv-brand">
-          <div class="brand-icon"><img src="https://i.ibb.co/vvvXPzCC/20260514-133111.jpg" alt="VIPER STORE Logo" /></div>
-          <div>
-            <div class="brand-name">VIPER STORE</div>
-            <div class="brand-sub">Premium Social Media Services</div>
-            <div class="brand-tg">Telegram: @VIP3RxYT</div>
-          </div>
-        </div>
-        <div class="inv-meta">
-          <div class="inv-badge">TAX INVOICE</div>
-          <div class="inv-meta-grid">
-            <span>Invoice No:</span>
-            <input id="invoiceNo" value="INV-25/26-1042" />
-            <span>Date:</span>
-            <input type="date" id="invoiceDate" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Client + Payment Info -->
-      <div class="client-grid">
-        <div class="client-box">
-          <div class="client-box-label">Billed To</div>
-          <input class="client-name-input" id="clientName" placeholder="Client Name" value="" />
-          <input class="client-detail-input" id="clientEmail" placeholder="Email" value="" />
-          <input class="client-detail-input" id="clientPhone" placeholder="Phone" value="" />
-        </div>
-        <div class="client-box">
-          <div class="client-box-label">Payment Information</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px">
-            <span style="color:var(--muted)">Method:</span>
-            <select id="payMethod" style="background:transparent;border:none;font-weight:700;color:var(--text);font-size:12px;cursor:pointer;outline:none;font-family:'Space Grotesk',sans-serif;width:auto">
-              <option>UPI (Paytm/PhonePe)</option>
-              <option>Binance / Crypto</option>
-              <option>Bank Transfer</option>
-            </select>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
-            <span style="color:var(--muted)">Status:</span>
-            <span id="statusBadge" class="status-badge" style="background:#fee2e2;color:#991b1b;border:1px solid #ef4444">UNPAID</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Items Table -->
-      <div class="inv-table-wrap">
-        <table id="itemsTable">
-          <thead>
-            <tr>
-              <th style="text-align:center;width:32px">#</th>
-              <th style="text-align:left">Item Description</th>
-              <th style="text-align:center;width:50px">SAC</th>
-              <th style="text-align:center;width:80px">Qty</th>
-              <th style="text-align:right">Rate</th>
-              <th style="text-align:right">Amount</th>
-              <th style="width:36px"></th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr class="empty-row"><td colspan="7">No items added. Click + ADD from catalog.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Bottom: Words + Totals -->
-      <div class="bottom-grid">
-        <div class="words-col">
-          <div class="words-box">
-            <div class="words-label">Total Amount in Words:</div>
-            <div class="words-text" id="amountWords">Rupees Zero Only</div>
-          </div>
-          <div>
-            <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Order Notes</div>
-            <textarea id="orderNotes" placeholder="Links or special notes..." style="width:100%;height:56px;resize:none"></textarea>
-          </div>
-        </div>
-        <div class="totals-col">
-          <div class="total-row">
-            <span class="lbl">Subtotal</span>
-            <span class="val" id="tSubtotal">₹0.00</span>
-          </div>
-          <div class="total-row">
-            <span class="lbl" id="discountLabel">Discount (0%)</span>
-            <span class="val" style="color:#ef4444" id="tDiscount">− ₹0.00</span>
-          </div>
-          <div class="total-row">
-            <span class="lbl" id="taxLabel">Taxes (0%)</span>
-            <span class="val" style="color:var(--muted)" id="tTax">+ ₹0.00</span>
-          </div>
-          <div class="total-grand">
-            <span class="lbl">Total</span>
-            <span class="val" id="tGrand">₹0.00</span>
-          </div>
-          <div class="total-paid">
-            <span>Amount Paid</span>
-            <span class="val" id="tPaid">₹0.00</span>
-          </div>
-          <div class="total-balance">
-            <span class="lbl">Balance Due</span>
-            <span class="val" id="tBalance">₹0.00</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="inv-footer">
-        <div>
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Terms & Conditions</div>
-          <ul class="tc-list">
-            <li>All services are digital & non-tangible. No physical delivery.</li>
-            <li>No refunds once the order processing has started.</li>
-            <li>Ensure accounts/links are strictly set to public.</li>
-          </ul>
-        </div>
-        <div class="sig-area">
-          <div class="sig-icon">✍</div>
-          <div class="sig-line">
-            <div class="sig-name">For VIPER STORE</div>
-            <div class="sig-role">Authorized Signatory</div>
-          </div>
-        </div>
-      </div>
-
+    <!-- TOP TABS -->
+    <div class="top-tabs">
+      <button class="tab-btn active" id="tab-btn-invoice" onclick="switchTab('invoice')">🧾 Invoice</button>
+      <button class="tab-btn" id="tab-btn-khata" onclick="switchTab('khata')">📒 Khatabook <span class="tab-badge" id="dueBadge" style="display:none">0</span></button>
     </div>
-  </div>
 
-</div>
+    <!-- INVOICE TAB -->
+    <div class="tab-pane active" id="tab-invoice">
+      <div id="invoice-paper">
+
+        <!-- Watermark -->
+        <div id="watermark">UNPAID</div>
+
+        <!-- Header -->
+        <div class="inv-header">
+          <div class="inv-brand">
+            <div class="brand-icon"><img src="https://i.ibb.co/vvvXPzCC/20260514-133111.jpg" alt="VIPER STORE Logo" /></div>
+            <div>
+              <div class="brand-name">VIPER STORE</div>
+              <div class="brand-sub">Premium Social Media Services</div>
+              <div class="brand-tg">Telegram: @VIP3RxYT</div>
+            </div>
+          </div>
+          <div class="inv-meta">
+            <div class="inv-badge">TAX INVOICE</div>
+            <div class="inv-meta-grid">
+              <span>Invoice No:</span>
+              <input id="invoiceNo" value="INV-25/26-1042" />
+              <span>Date:</span>
+              <input type="date" id="invoiceDate" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Client + Payment Info -->
+        <div class="client-grid">
+          <div class="client-box">
+            <div class="client-box-label">Billed To</div>
+            <input class="client-name-input" id="clientName" placeholder="Client Name" value="" />
+            <input class="client-detail-input" id="clientEmail" placeholder="Email" value="" />
+            <input class="client-detail-input" id="clientPhone" placeholder="Phone" value="" />
+          </div>
+          <div class="client-box">
+            <div class="client-box-label">Payment Information</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px">
+              <span style="color:var(--muted)">Method:</span>
+              <select id="payMethod" style="background:transparent;border:none;font-weight:700;color:var(--text);font-size:12px;cursor:pointer;outline:none;font-family:'Space Grotesk',sans-serif;width:auto">
+                <option>UPI (Paytm/PhonePe)</option>
+                <option>Binance / Crypto</option>
+                <option>Bank Transfer</option>
+              </select>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+              <span style="color:var(--muted)">Status:</span>
+              <span id="statusBadge" class="status-badge" style="background:#fee2e2;color:#991b1b;border:1px solid #ef4444">UNPAID</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="inv-table-wrap">
+          <table class="inv-tbl" id="itemsTable">
+            <thead>
+              <tr>
+                <th style="text-align:center;width:32px">#</th>
+                <th style="text-align:left">Item Description</th>
+                <th style="text-align:center;width:50px">SAC</th>
+                <th style="text-align:center;width:80px">Qty</th>
+                <th style="text-align:right">Rate</th>
+                <th style="text-align:right">Amount</th>
+                <th style="width:36px"></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr class="empty-row"><td colspan="7">No items added. Click + ADD from catalog.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bottom: Words + Totals -->
+        <div class="bottom-grid">
+          <div class="words-col">
+            <div class="words-box">
+              <div class="words-label">Total Amount in Words:</div>
+              <div class="words-text" id="amountWords">Rupees Zero Only</div>
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Order Notes</div>
+              <textarea id="orderNotes" placeholder="Links or special notes..." style="width:100%;height:56px;resize:none"></textarea>
+            </div>
+          </div>
+          <div class="totals-col">
+            <div class="total-row">
+              <span class="lbl">Subtotal</span>
+              <span class="val" id="tSubtotal">₹0.00</span>
+            </div>
+            <div class="total-row">
+              <span class="lbl" id="discountLabel">Discount (0%)</span>
+              <span class="val" style="color:#ef4444" id="tDiscount">− ₹0.00</span>
+            </div>
+            <div class="total-row">
+              <span class="lbl" id="taxLabel">Taxes (0%)</span>
+              <span class="val" style="color:var(--muted)" id="tTax">+ ₹0.00</span>
+            </div>
+            <div class="total-grand">
+              <span class="lbl">Total</span>
+              <span class="val" id="tGrand">₹0.00</span>
+            </div>
+            <div class="total-paid">
+              <span>Amount Paid</span>
+              <span class="val" id="tPaid">₹0.00</span>
+            </div>
+            <div class="total-balance">
+              <span class="lbl">Balance Due</span>
+              <span class="val" id="tBalance">₹0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save to Khatabook row -->
+        <div class="save-khata-row">
+          <button class="save-khata-btn" onclick="saveInvoiceToKhata()">
+            📒 Save to Khatabook
+          </button>
+          <span class="save-khata-hint">Invoice ka balance automatically client ke ledger mein jayega</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="inv-footer" style="margin-top:16px">
+          <div>
+            <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Terms & Conditions</div>
+            <ul class="tc-list">
+              <li>All services are digital & non-tangible. No physical delivery.</li>
+              <li>No refunds once the order processing has started.</li>
+              <li>Ensure accounts/links are strictly set to public.</li>
+            </ul>
+          </div>
+          <div class="sig-area">
+            <div class="sig-icon">✍</div>
+            <div class="sig-line">
+              <div class="sig-name">For VIPER STORE</div>
+              <div class="sig-role">Authorized Signatory</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- KHATABOOK TAB -->
+    <div class="tab-pane" id="tab-khata">
+      <div class="khata-container">
+
+        <!-- Summary Cards -->
+        <div class="khata-summary">
+          <div class="summary-card red">
+            <div class="s-label">💸 Total Due (Milna Hai)</div>
+            <div class="s-val" id="sTotalDue">₹0</div>
+            <div class="s-sub" id="sDueCount">0 clients</div>
+          </div>
+          <div class="summary-card green">
+            <div class="s-label">✅ Total Advance</div>
+            <div class="s-val" id="sTotalAdvance">₹0</div>
+            <div class="s-sub" id="sAdvCount">0 clients</div>
+          </div>
+          <div class="summary-card blue">
+            <div class="s-label">👥 Total Clients</div>
+            <div class="s-val" id="sTotalClients">0</div>
+            <div class="s-sub">Registered</div>
+          </div>
+          <div class="summary-card orange">
+            <div class="s-label">📋 Transactions</div>
+            <div class="s-val" id="sTotalTxns">0</div>
+            <div class="s-sub">All time</div>
+          </div>
+        </div>
+
+        <!-- Layout -->
+        <div class="khata-layout">
+
+          <!-- Client List Panel -->
+          <div class="client-panel">
+            <div class="panel-header">
+              <span>👥 Clients</span>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button class="export-csv-btn" onclick="exportCSV()">📥 CSV</button>
+                <button class="add-client-btn" onclick="openAddClientModal()">+ Add</button>
+              </div>
+            </div>
+            <div class="client-search">
+              <input id="clientSearchInput" placeholder="🔍 Search client..." oninput="renderClientList()" />
+            </div>
+            <div id="clientList">
+              <div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">No clients yet. Add a client!</div>
+            </div>
+          </div>
+
+          <!-- Ledger Panel -->
+          <div class="ledger-panel" id="ledgerPanel">
+            <div class="no-client-msg">
+              <div class="big-icon">📒</div>
+              <p>Koi client select karo<br>ya naya client add karo</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end #main -->
+
+</div><!-- end #app -->
 
 <!-- HAMBURGER (mobile) -->
 <button id="hamburger" onclick="openSidebar()">☰</button>
 
-<!-- RECORDS MODAL -->
-<div id="recordsModal">
-  <div id="recordsPanel">
-    <div class="rec-header">
-      <div class="rec-title">📋 Records <span>Manager</span></div>
-      <button class="rec-close" onclick="closeRecords()">✕</button>
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="addClientModal">
+  <div class="modal-box">
+    <div class="modal-title">➕ Naya Client Add Karo</div>
+    <div class="modal-field">
+      <label>Client Name *</label>
+      <input id="newClientName" placeholder="e.g. Rahul Sharma" />
     </div>
-    <div class="rec-toolbar">
-      <button class="rec-filter-btn active f-all" onclick="setFilter('all',this)">All</button>
-      <button class="rec-filter-btn f-due" onclick="setFilter('unpaid',this)">🔴 Due</button>
-      <button class="rec-filter-btn f-partial" onclick="setFilter('partial',this)">🟡 Partial</button>
-      <button class="rec-filter-btn f-paid" onclick="setFilter('paid',this)">🟢 Paid</button>
-      <input class="rec-search" id="recSearch" placeholder="🔍 Search client / invoice..." oninput="renderRecords()" />
+    <div class="modal-field">
+      <label>Phone Number</label>
+      <input id="newClientPhone" placeholder="e.g. 9876543210" />
     </div>
-    <div class="rec-body" id="recBody">
-      <div class="rec-empty">No records saved yet.<br>Fill an invoice and click 💾 Save to Records.</div>
+    <div class="modal-field">
+      <label>Email</label>
+      <input id="newClientEmail" placeholder="e.g. rahul@gmail.com" />
     </div>
-    <div class="rec-stats" id="recStats"></div>
-  </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div id="editModal">
-  <div id="editPanel">
-    <div class="edit-title">✏️ Edit Record</div>
-    <input type="hidden" id="editId" />
-    <div class="edit-field">
-      <label>Client Name</label>
-      <input id="editClient" placeholder="Client Name" />
+    <div class="modal-field">
+      <label>Opening Balance (₹) — Positive = Advance, Negative = Due</label>
+      <input type="number" id="newClientBalance" placeholder="0" value="0" />
     </div>
-    <div class="edit-field">
-      <label>Invoice No</label>
-      <input id="editInvNo" placeholder="INV-001" />
-    </div>
-    <div class="edit-field">
-      <label>Payment Status</label>
-      <select id="editStatus">
-        <option value="UNPAID">UNPAID</option>
-        <option value="PARTIAL">PARTIAL</option>
-        <option value="PAID">PAID</option>
-      </select>
-    </div>
-    <div class="edit-field">
-      <label>Amount Paid</label>
-      <input type="number" id="editPaid" placeholder="0" min="0" />
-    </div>
-    <div class="edit-field">
-      <label>Keep record for (days)</label>
-      <select id="editExpiry">
-        <option value="5">5 days</option>
-        <option value="6">6 days</option>
-        <option value="7" selected>7 days</option>
-      </select>
-    </div>
-    <div class="edit-field">
-      <label>Notes</label>
-      <textarea id="editNotes" style="width:100%;height:56px;resize:none"></textarea>
-    </div>
-    <div class="edit-actions">
-      <button class="edit-cancel" onclick="closeEdit()">Cancel</button>
-      <button class="edit-save" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD ORDER MODAL -->
-<div id="addOrderModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
-  <div style="background:var(--card);border-radius:14px;width:100%;max-width:420px;padding:24px;border:1px solid var(--border);margin:20px;">
-    <div class="edit-title">➕ Add Order to Record</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;" id="addOrderClientLabel"></div>
-    <input type="hidden" id="addOrderRecId" />
-    <div class="edit-field">
-      <label>Service Name</label>
-      <input id="aoService" placeholder="e.g. Instagram Followers 1K" />
-    </div>
-    <div style="display:flex;gap:10px;">
-      <div class="edit-field" style="flex:1;">
-        <label>Rate (₹)</label>
-        <input type="number" id="aoRate" placeholder="0" min="0" />
-      </div>
-      <div class="edit-field" style="flex:1;">
-        <label>Qty</label>
-        <input type="number" id="aoQty" value="1" min="1" />
-      </div>
-    </div>
-    <div class="edit-field">
-      <label>Status</label>
-      <select id="aoStatus">
-        <option value="DUE">DUE</option>
-        <option value="PARTIAL">PARTIAL</option>
-        <option value="PAID">PAID</option>
-      </select>
-    </div>
-    <div class="edit-field">
-      <label>Note (optional)</label>
-      <input id="aoNote" placeholder="Account link / target URL..." />
-    </div>
-    <div class="edit-actions">
-      <button class="edit-cancel" onclick="closeAddOrder()">Cancel</button>
-      <button class="edit-save" onclick="saveAddOrder()">➕ Add Order</button>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeAddClientModal()">Cancel</button>
+      <button class="modal-save-btn" onclick="saveNewClient()">Save Client</button>
     </div>
   </div>
 </div>
@@ -720,29 +815,47 @@ const firebaseConfig = {
 const _fbApp = initializeApp(firebaseConfig);
 const _db = getDatabase(_fbApp);
 
-// ── DATA (loaded from Firebase) ──
-let CATALOG = {}; // { "Category Name": [{name, rate}, ...] }
-
-// ── STATE ──
+// ── CATALOG STATE ──
+let CATALOG = {};
 let currency = "INR";
 let exchangeRate = 83;
 let items = [];
 let idCounter = 0;
 let openCats = {};
 let customOpen = false;
+let selectedItems = new Set();
+
+// ── KHATABOOK STATE (LocalStorage) ──
+let khataClients = []; // [{id, name, phone, email, balance, createdAt}]
+let khataTransactions = []; // [{id, clientId, type, amount, note, date, invoiceNo}]
+let activeClientId = null;
+
+function loadKhata() {
+  try {
+    khataClients = JSON.parse(localStorage.getItem('vs_khata_clients') || '[]');
+    khataTransactions = JSON.parse(localStorage.getItem('vs_khata_txns') || '[]');
+  } catch(e) { khataClients = []; khataTransactions = []; }
+}
+function saveKhata() {
+  localStorage.setItem('vs_khata_clients', JSON.stringify(khataClients));
+  localStorage.setItem('vs_khata_txns', JSON.stringify(khataTransactions));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
 // ── INIT ──
 document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
 renderTable();
 recalc();
+loadKhata();
+renderClientList();
+updateSummaryCards();
+updateDueBadge();
 
-// Show loading in catalog
+// ── FIREBASE CATALOG ──
 document.getElementById('catalogList').innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px"><div style="margin-bottom:8px">🔥 Loading catalog from Firebase...</div></div>';
 
-// Load catalog from Firebase (live updates)
 onValue(ref(_db, 'catalog'), (snapshot) => {
   const rawData = snapshot.val() || {};
-  // Convert Firebase format to flat CATALOG format
   CATALOG = {};
   for (const [key, cat] of Object.entries(rawData)) {
     const svcs = cat.services ? Object.values(cat.services) : [];
@@ -763,10 +876,16 @@ function fetchRate() {
   document.getElementById('rateLabel').textContent = '1 USD = ₹83 (Fixed)';
 }
 
-// ── MULTI SELECT STATE ──
-let selectedItems = new Set(); // key = "catIdx-pkgIdx"
+// ── TAB SWITCH ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('tab-btn-' + tab).classList.add('active');
+  if (tab === 'khata') { renderClientList(); updateSummaryCards(); }
+}
 
-// ── CATALOG BUILD ──
+// ── CATALOG ──
 function buildCatalog() {
   const list = document.getElementById('catalogList');
   list.innerHTML = '';
@@ -797,19 +916,14 @@ function buildCatalog() {
 }
 
 function toggleSelect(catIdx, pkgIdx, e) {
-  // Don't trigger if clicked directly on + ADD button
   if (e && e.target && e.target.classList.contains('add-btn')) return;
   const key = catIdx + '-' + pkgIdx;
   const row = document.getElementById('pkgrow-' + key);
   const chk = document.getElementById('chk-' + key);
   if (selectedItems.has(key)) {
-    selectedItems.delete(key);
-    row.classList.remove('selected');
-    chk.checked = false;
+    selectedItems.delete(key); row.classList.remove('selected'); chk.checked = false;
   } else {
-    selectedItems.add(key);
-    row.classList.add('selected');
-    chk.checked = true;
+    selectedItems.add(key); row.classList.add('selected'); chk.checked = true;
   }
   updateMultiBar();
 }
@@ -828,8 +942,7 @@ function clearSelection() {
     if (row) row.classList.remove('selected');
     if (chk) chk.checked = false;
   });
-  selectedItems.clear();
-  updateMultiBar();
+  selectedItems.clear(); updateMultiBar();
 }
 
 function addSelected() {
@@ -842,10 +955,7 @@ function addSelected() {
     if (existing) { existing.qty++; }
     else { items.push({ id: ++idCounter, cat: catName, name: pkg.name, baseRate: pkg.rate, qty: 1, sac: '9983', note: '' }); }
   });
-  clearSelection();
-  renderTable();
-  recalc();
-  // Flash feedback
+  clearSelection(); renderTable(); recalc();
   const bar = document.getElementById('multiBar');
   bar.style.background = '#10b981';
   bar.querySelector('#multiCount').textContent = '✅ Added to invoice!';
@@ -873,9 +983,7 @@ function setCurrency(c) {
   document.getElementById('btnINR').classList.toggle('active', c === 'INR');
   document.getElementById('btnUSD').classList.toggle('active', c === 'USD');
   document.getElementById('paidLabel').textContent = `Amount Paid (${c === 'INR' ? '₹' : '$'})`;
-  renderTable();
-  recalc();
-  updatePriceLabels();
+  renderTable(); recalc(); updatePriceLabels();
 }
 
 function updatePriceLabels() {
@@ -920,8 +1028,6 @@ function removeItem(id) { items = items.filter(i => i.id !== id); renderTable();
 function changeQty(id, delta) { const it = items.find(i => i.id === id); if (it) { it.qty = Math.max(1, it.qty + delta); } renderTable(); recalc(); }
 function setQty(id, val) { const it = items.find(i => i.id === id); if (it) { it.qty = Math.max(1, parseInt(val)||1); } recalc(); }
 function setNote(id, val) { const it = items.find(i => i.id === id); if (it) it.note = val; }
-function setName(id, val) { const it = items.find(i => i.id === id); if (it) it.name = val; }
-function setRate(id, val) { const it = items.find(i => i.id === id); if (it) { it.baseRate = parseFloat(val) || 0; recalc(); } }
 
 function convert(inr) { return currency === 'USD' ? inr / exchangeRate : inr; }
 function fmt(amount) {
@@ -943,13 +1049,7 @@ function renderTable() {
     return `<tr>
       <td style="text-align:center;font-weight:700;color:var(--muted)">${idx+1}</td>
       <td>
-        <input
-          style="font-weight:700;font-size:12px;background:transparent;border:none;border-bottom:1px dashed var(--border);outline:none;width:100%;color:var(--text);padding:2px 0;"
-          value="${escHTML(item.name)}"
-          placeholder="Service name"
-          oninput="setName(${item.id},this.value)"
-          title="Click to edit service name"
-        />
+        <div style="font-weight:700">${item.name}</div>
         <input class="note-input" value="${escHTML(item.note)}" placeholder="Account Link / Target URL..."
           oninput="setNote(${item.id},this.value)" />
       </td>
@@ -961,16 +1061,7 @@ function renderTable() {
           <button class="qty-btn qty-plus" onclick="changeQty(${item.id},1)">+</button>
         </div>
       </td>
-      <td style="text-align:right">
-        <input
-          type="number"
-          style="width:80px;text-align:right;font-weight:700;font-size:12px;background:transparent;border:none;border-bottom:1px dashed var(--border);outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;"
-          value="${item.baseRate}"
-          min="0"
-          oninput="setRate(${item.id},this.value)"
-          title="Click to edit rate"
-        />
-      </td>
+      <td style="text-align:right;color:var(--muted);font-weight:600">${fmt(rate)}</td>
       <td style="text-align:right;font-weight:800">${fmt(total)}</td>
       <td style="text-align:center"><button class="del-btn" onclick="removeItem(${item.id})">🗑</button></td>
     </tr>`;
@@ -984,14 +1075,12 @@ function recalc() {
   const discount = parseFloat(document.getElementById('discountInput').value) || 0;
   const tax = parseFloat(document.getElementById('taxInput').value) || 0;
   const paid = parseFloat(document.getElementById('paidInput').value) || 0;
-
   const subtotal = items.reduce((s, i) => s + convert(i.baseRate) * i.qty, 0);
   const discountAmt = subtotal * (discount / 100);
   const afterDiscount = subtotal - discountAmt;
   const taxAmt = afterDiscount * (tax / 100);
   const grandTotal = afterDiscount + taxAmt;
   const balance = grandTotal - paid;
-
   const statusLabel = grandTotal > 0 && balance <= 0 ? 'PAID' : paid > 0 && balance > 0 ? 'PARTIAL' : 'UNPAID';
   const statusColors = {
     PAID: {bg:'#d1fae5',color:'#065f46',border:'#10b981'},
@@ -999,18 +1088,11 @@ function recalc() {
     UNPAID: {bg:'#fee2e2',color:'#991b1b',border:'#ef4444'}
   };
   const sc = statusColors[statusLabel];
-
-  // Update badge
   const badge = document.getElementById('statusBadge');
   badge.textContent = statusLabel;
   badge.style.background = sc.bg; badge.style.color = sc.color; badge.style.border = `1px solid ${sc.border}`;
-
-  // Watermark
   const wm = document.getElementById('watermark');
-  wm.textContent = statusLabel;
-  wm.style.color = sc.border;
-
-  // Totals
+  wm.textContent = statusLabel; wm.style.color = sc.border;
   document.getElementById('tSubtotal').textContent = fmt(subtotal);
   document.getElementById('discountLabel').textContent = `Discount (${discount}%)`;
   document.getElementById('tDiscount').textContent = '− ' + fmt(discountAmt);
@@ -1019,13 +1101,10 @@ function recalc() {
   document.getElementById('tGrand').textContent = fmt(grandTotal);
   document.getElementById('tPaid').textContent = fmt(paid);
   document.getElementById('tBalance').textContent = fmt(balance);
-
-  // Words
   const words = numberToWords(Math.round(grandTotal));
   document.getElementById('amountWords').textContent = `${currency === 'INR' ? 'Rupees' : 'Dollars'} ${words} Only`;
 }
 
-// ── NUMBER TO WORDS ──
 function numberToWords(num) {
   if (!num || num === 0) return 'Zero';
   const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
@@ -1060,465 +1139,376 @@ function closeSidebar() {
 }
 
 // ── PDF DOWNLOAD ──
-function downloadPDF() {
-  closeSidebar();
-  setTimeout(() => window.print(), 200);
+function downloadPDF() { closeSidebar(); setTimeout(() => window.print(), 200); }
+
+// ════════════════════════════════════════════
+// ── KHATABOOK FUNCTIONS ──
+// ════════════════════════════════════════════
+
+// Get client running balance (opening + all transactions)
+function getClientBalance(clientId) {
+  const client = khataClients.find(c => c.id === clientId);
+  if (!client) return 0;
+  const txnBalance = khataTransactions
+    .filter(t => t.clientId === clientId)
+    .reduce((sum, t) => {
+      // received = client ne pay kiya = balance kam hua (due reduce)
+      // paid = humne client ko diya = balance badha (advance reduce)
+      // invoice = naya due add hua
+      if (t.type === 'received') return sum - t.amount;
+      if (t.type === 'paid') return sum + t.amount;
+      if (t.type === 'invoice') return sum + t.amount;
+      return sum;
+    }, parseFloat(client.openingBalance) || 0);
+  return txnBalance;
 }
 
-// ── NEW INVOICE ──
-function newInvoice() {
-  if (items.length > 0 && !confirm('Current invoice clear karein? Save kiya hua data rahega.')) return;
-  items = [];
-  idCounter = 0;
-  window._editingRecordId = null;
-  document.getElementById('clientName').value = '';
-  document.getElementById('clientEmail').value = '';
-  document.getElementById('clientPhone').value = '';
-  document.getElementById('invoiceNo').value = 'INV-25/26-' + (Math.floor(Math.random()*900)+100);
-  document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('orderNotes').value = '';
-  document.getElementById('paidInput').value = 0;
-  document.getElementById('discountInput').value = 0;
-  document.getElementById('taxInput').value = 0;
-  renderTable();
-  recalc();
-  document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
-}
-let recFilter = 'all';
-
-function getRecords() {
-  try { return JSON.parse(localStorage.getItem('viperRecords') || '[]'); } catch(e) { return []; }
-}
-function setRecords(arr) { localStorage.setItem('viperRecords', JSON.stringify(arr)); }
-
-function saveRecord() {
-  const client = document.getElementById('clientName').value.trim() || 'Unknown Client';
-  const invNo = document.getElementById('invoiceNo').value.trim() || 'INV-???';
-  const date = document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0];
-  const status = document.getElementById('statusBadge').textContent.trim();
-  const grand = document.getElementById('tGrand').textContent;
-  const paid = document.getElementById('tPaid').textContent;
-  const balance = document.getElementById('tBalance').textContent;
-  const notes = document.getElementById('orderNotes').value.trim();
-  const method = document.getElementById('payMethod').value;
-  const paidAmt = parseFloat(document.getElementById('paidInput').value) || 0;
-  const grandAmt = parseFloat(document.getElementById('tGrand').textContent.replace(/[^0-9.]/g,'')) || 0;
-
-  // Default 7 day expiry
-  const expiryDays = 7;
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + expiryDays);
-
-  const records = getRecords();
-  // If editing an existing record, use that id; else match by invNo
-  const editingId = window._editingRecordId || null;
-  const existIdx = editingId
-    ? records.findIndex(r => r.id === editingId)
-    : records.findIndex(r => r.invNo === invNo);
-
-  const rec = {
-    id: existIdx >= 0 ? records[existIdx].id : Date.now(),
-    client, invNo, date, status,
-    grand, paid, balance, notes, method,
-    paidAmt, grandAmt,
-    savedItems: JSON.parse(JSON.stringify(items)),
-    savedDiscount: parseFloat(document.getElementById('discountInput').value) || 0,
-    savedTax: parseFloat(document.getElementById('taxInput').value) || 0,
-    savedEmail: document.getElementById('clientEmail').value.trim(),
-    savedPhone: document.getElementById('clientPhone').value.trim(),
-    savedCurrency: currency,
-    savedAt: new Date().toISOString(),
-    expiryDate: existIdx >= 0 ? records[existIdx].expiryDate : expiryDate.toISOString(),
-    expiryDays: existIdx >= 0 ? records[existIdx].expiryDays : expiryDays,
-    orders: existIdx >= 0 ? (records[existIdx].orders || []) : []
-  };
-
-  if (existIdx >= 0) { records[existIdx] = rec; }
-  else { records.unshift(rec); }
-  setRecords(records);
-  window._editingRecordId = rec.id; // keep tracking same record
-
-  // Flash feedback
-  const btn = event.currentTarget;
-  const orig = btn.textContent;
-  btn.textContent = '✅ Saved!';
-  btn.style.background = '#059669';
-  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1800);
-}
-
-function openRecords() {
-  cleanExpired();
-  renderRecords();
-  document.getElementById('recordsModal').classList.add('show');
-}
-function closeRecords() { document.getElementById('recordsModal').classList.remove('show'); }
-
-function cleanExpired() {
-  // Keep expired records visible but marked — don't auto-delete, user decides
-}
-
-function setFilter(f, btn) {
-  recFilter = f;
-  document.querySelectorAll('.rec-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderRecords();
-}
-
-function renderRecords() {
-  const records = getRecords();
-  const search = (document.getElementById('recSearch').value || '').toLowerCase();
-  const now = new Date();
-
-  let filtered = records.filter(r => {
-    const matchSearch = !search || r.client.toLowerCase().includes(search) || r.invNo.toLowerCase().includes(search);
-    if (!matchSearch) return false;
-    if (recFilter === 'all') return true;
-    if (recFilter === 'paid') return r.status === 'PAID';
-    if (recFilter === 'unpaid') return r.status === 'UNPAID';
-    if (recFilter === 'partial') return r.status === 'PARTIAL';
-    return true;
+function updateSummaryCards() {
+  let totalDue = 0, totalAdv = 0, dueCount = 0, advCount = 0;
+  let totalTxns = khataTransactions.length;
+  khataClients.forEach(c => {
+    const bal = getClientBalance(c.id);
+    if (bal > 0) { totalDue += bal; dueCount++; }
+    else if (bal < 0) { totalAdv += Math.abs(bal); advCount++; }
   });
+  document.getElementById('sTotalDue').textContent = '₹' + totalDue.toLocaleString('en-IN');
+  document.getElementById('sDueCount').textContent = dueCount + ' clients';
+  document.getElementById('sTotalAdvance').textContent = '₹' + totalAdv.toLocaleString('en-IN');
+  document.getElementById('sAdvCount').textContent = advCount + ' clients';
+  document.getElementById('sTotalClients').textContent = khataClients.length;
+  document.getElementById('sTotalTxns').textContent = totalTxns;
+}
 
-  const body = document.getElementById('recBody');
+function updateDueBadge() {
+  const dueClients = khataClients.filter(c => getClientBalance(c.id) > 0).length;
+  const badge = document.getElementById('dueBadge');
+  if (dueClients > 0) {
+    badge.style.display = 'inline'; badge.textContent = dueClients;
+  } else {
+    badge.style.display = 'none';
+  }
+}
 
+function renderClientList() {
+  const search = (document.getElementById('clientSearchInput')?.value || '').toLowerCase();
+  const list = document.getElementById('clientList');
+  const filtered = khataClients.filter(c =>
+    c.name.toLowerCase().includes(search) ||
+    (c.phone || '').includes(search)
+  );
   if (filtered.length === 0) {
-    body.innerHTML = '<div class="rec-empty">No records found.<br><small>Try changing the filter or search.</small></div>';
-    renderStats(records, now);
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">Koi client nahi mila</div>';
     return;
   }
-
-  body.innerHTML = filtered.map(r => {
-    const expiry = new Date(r.expiryDate);
-    const daysLeft = Math.ceil((expiry - now) / (1000*60*60*24));
-    const isExpired = daysLeft <= 0;
-    const isSoon = daysLeft > 0 && daysLeft <= 2;
-
-    let expiryHTML = '';
-    if (isExpired) expiryHTML = `<div class="rec-expiry expiry-gone">🗂 Record expired ${Math.abs(daysLeft)}d ago — clear when ready</div>`;
-    else if (isSoon) expiryHTML = `<div class="rec-expiry expiry-soon">⚠️ Expires in ${daysLeft} day${daysLeft>1?'s':''}</div>`;
-    else expiryHTML = `<div class="rec-expiry expiry-ok">✓ Active for ${daysLeft} more day${daysLeft>1?'s':''}</div>`;
-
-    const statusClass = r.status === 'PAID' ? 'status-paid' : r.status === 'PARTIAL' ? 'status-partial' : 'status-unpaid';
-    const badgeClass = r.status === 'PAID' ? 'badge-paid' : r.status === 'PARTIAL' ? 'badge-partial' : 'badge-unpaid';
-
-    return `<div class="rec-card ${statusClass} ${isExpired?'expired':''}" id="rec-${r.id}">
-      <div class="rec-row1">
-        <div>
-          <div class="rec-client">${escHTMLR(r.client)}</div>
-          <div class="rec-inv">${escHTMLR(r.invNo)} · ${r.date}</div>
-        </div>
-        <div class="rec-badges">
-          <span class="rec-status-badge ${badgeClass}">${r.status}</span>
-          ${isExpired ? '<span class="rec-status-badge badge-expired">EXPIRED</span>' : ''}
-        </div>
+  list.innerHTML = filtered.map(c => {
+    const bal = getClientBalance(c.id);
+    const balClass = bal > 0 ? 'due' : bal < 0 ? 'advance' : 'clear';
+    const balText = bal > 0 ? `Due ₹${bal.toLocaleString('en-IN')}` : bal < 0 ? `Adv ₹${Math.abs(bal).toLocaleString('en-IN')}` : 'Clear';
+    const isActive = c.id === activeClientId;
+    return `<div class="client-item ${isActive ? 'active' : ''}" onclick="selectClient('${c.id}')">
+      <div>
+        <div class="ci-name">${c.name}</div>
+        <div class="ci-phone">${c.phone || 'No phone'}</div>
       </div>
-      <div class="rec-row2">
-        <div class="rec-info-item">
-          <span class="rec-info-label">Total</span>
-          <span class="rec-info-val">${r.grand}</span>
-        </div>
-        <div class="rec-info-item">
-          <span class="rec-info-label">Paid</span>
-          <span class="rec-info-val" style="color:#10b981">${r.paid}</span>
-        </div>
-        <div class="rec-info-item">
-          <span class="rec-info-label">Balance</span>
-          <span class="rec-info-val" style="color:#ef4444">${r.balance}</span>
-        </div>
-        <div class="rec-info-item">
-          <span class="rec-info-label">Method</span>
-          <span class="rec-info-val" style="font-size:11px">${r.method}</span>
-        </div>
-      </div>
-      ${r.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;font-style:italic">📝 ${escHTMLR(r.notes)}</div>` : ''}
-      ${expiryHTML}
-
-      <!-- Sub-Orders List -->
-      ${(r.orders && r.orders.length > 0) ? `
-        <div style="margin-top:10px;border-top:1px dashed var(--border);padding-top:8px;">
-          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:6px">📦 Orders (${r.orders.length})</div>
-          ${r.orders.map((o,oi) => `
-            <div style="background:var(--bg);border-radius:8px;margin-bottom:6px;padding:7px 10px;border:1px solid var(--border);">
-              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                <input
-                  value="${escHTMLR(o.service)}"
-                  placeholder="Service name"
-                  style="flex:2;min-width:100px;font-weight:700;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px;color:var(--text);outline:none;font-family:'Space Grotesk',sans-serif;"
-                  oninput="editOrderField(${r.id},${oi},'service',this.value)"
-                />
-                <input
-                  type="number" value="${o.rate}" min="0"
-                  placeholder="Rate"
-                  style="width:70px;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px;color:var(--text);outline:none;font-family:'JetBrains Mono',monospace;font-weight:700;"
-                  oninput="editOrderField(${r.id},${oi},'rate',this.value)"
-                />
-                <input
-                  type="number" value="${o.qty}" min="1"
-                  placeholder="Qty"
-                  style="width:48px;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);outline:none;font-weight:700;"
-                  oninput="editOrderField(${r.id},${oi},'qty',this.value)"
-                />
-                <select
-                  style="font-size:10px;font-weight:800;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);cursor:pointer;font-family:'Space Grotesk',sans-serif;"
-                  onchange="editOrderField(${r.id},${oi},'status',this.value)"
-                >
-                  <option value="DUE" ${(o.status||'DUE')==='DUE'?'selected':''}>🔴 DUE</option>
-                  <option value="PARTIAL" ${o.status==='PARTIAL'?'selected':''}>🟡 PARTIAL</option>
-                  <option value="PAID" ${o.status==='PAID'?'selected':''}>🟢 PAID</option>
-                </select>
-                <button onclick="deleteOrder(${r.id},${oi})" style="background:#fee2e2;border:none;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px;color:#dc2626;flex-shrink:0;">🗑</button>
-              </div>
-              <input
-                value="${escHTMLR(o.note||'')}"
-                placeholder="Note / account link..."
-                style="width:100%;margin-top:5px;font-size:10px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 7px;color:var(--muted);outline:none;font-family:'Space Grotesk',sans-serif;"
-                oninput="editOrderField(${r.id},${oi},'note',this.value)"
-              />
-              <div style="text-align:right;font-size:10px;color:var(--accent);font-weight:800;margin-top:4px;">
-                ₹${((parseFloat(o.rate)||0) * (parseInt(o.qty)||1)).toFixed(2)}
-              </div>
-            </div>
-          `).join('')}
-          <div style="text-align:right;font-size:11px;font-weight:800;margin-top:4px;color:var(--text)">
-            Orders Total: ₹${r.orders.reduce((s,o)=>s+(o.rate*o.qty),0).toFixed(2)}
-          </div>
-        </div>
-      ` : ''}
-
-      <div class="rec-actions">
-        <button class="rec-btn" onclick="editRecord(${r.id})">✏️ Edit</button>
-        <button class="rec-btn" style="background:#eef2ff;color:#4f46e5;border-color:#c7d2fe;" onclick="openAddOrder(${r.id})">➕ Add Order</button>
-        <button class="rec-btn success" onclick="markPaid(${r.id})">✅ Mark Paid</button>
-        <button class="rec-btn danger" onclick="deleteRecord(${r.id})">🗑 Delete</button>
-        ${isExpired ? `<button class="rec-btn danger" onclick="deleteRecord(${r.id})">🧹 Clear</button>` : ''}
-      </div>
+      <div class="ci-balance ${balClass}">${balText}</div>
     </div>`;
   }).join('');
-
-  renderStats(records, now);
 }
 
-function renderStats(records, now) {
-  const total = records.length;
-  const paid = records.filter(r => r.status==='PAID').length;
-  const due = records.filter(r => r.status==='UNPAID').length;
-  const partial = records.filter(r => r.status==='PARTIAL').length;
-  const expired = records.filter(r => new Date(r.expiryDate) < now).length;
-  document.getElementById('recStats').innerHTML = `
-    <div class="stat-chip"><div class="stat-dot" style="background:#6366f1"></div>${total} Total</div>
-    <div class="stat-chip"><div class="stat-dot" style="background:#10b981"></div>${paid} Paid</div>
-    <div class="stat-chip"><div class="stat-dot" style="background:#ef4444"></div>${due} Due</div>
-    <div class="stat-chip"><div class="stat-dot" style="background:#f59e0b"></div>${partial} Partial</div>
-    ${expired>0?`<div class="stat-chip"><div class="stat-dot" style="background:#94a3b8"></div>${expired} Expired</div>`:''}
+function selectClient(clientId) {
+  activeClientId = clientId;
+  renderClientList();
+  renderLedger();
+}
+
+function renderLedger() {
+  const panel = document.getElementById('ledgerPanel');
+  const client = khataClients.find(c => c.id === activeClientId);
+  if (!client) {
+    panel.innerHTML = '<div class="no-client-msg"><div class="big-icon">📒</div><p>Koi client select karo</p></div>';
+    return;
+  }
+  const bal = getClientBalance(client.id);
+  const balClass = bal > 0 ? 'due' : bal < 0 ? 'advance' : 'clear';
+  const balLabel = bal > 0 ? 'Due (Milna Hai)' : bal < 0 ? 'Advance (Dena Hai)' : 'Clear ✅';
+  const clientTxns = khataTransactions.filter(t => t.clientId === client.id).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  // Build running balance for each txn (oldest to newest)
+  const orderedTxns = [...clientTxns].reverse();
+  let running = parseFloat(client.openingBalance) || 0;
+  const txnWithBal = orderedTxns.map(t => {
+    if (t.type === 'received') running -= t.amount;
+    else if (t.type === 'paid') running += t.amount;
+    else if (t.type === 'invoice') running += t.amount;
+    return { ...t, runningBal: running };
+  }).reverse();
+
+  panel.innerHTML = `
+    <!-- Client Header -->
+    <div class="ledger-client-header">
+      <div>
+        <div class="lch-name">${client.name}</div>
+        <div class="lch-details">${client.phone ? '📞 ' + client.phone : ''} ${client.email ? '✉️ ' + client.email : ''}</div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button onclick="deleteClient('${client.id}')" style="background:#fee2e2;color:#991b1b;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">🗑 Delete</button>
+        </div>
+      </div>
+      <div class="lch-balance-box">
+        <div class="lch-balance-label">${balLabel}</div>
+        <div class="lch-balance-amount ${balClass}">₹${Math.abs(bal).toLocaleString('en-IN')}</div>
+      </div>
+    </div>
+
+    <!-- Add Transaction -->
+    <div class="add-txn-box">
+      <div class="add-txn-title">➕ Transaction Add Karo</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Type</div>
+        <div class="txn-type-toggle">
+          <button class="txn-type-btn active-received" id="txnTypeReceived" onclick="setTxnType('received')">💚 Received (Mila)</button>
+          <button class="txn-type-btn" id="txnTypePaid" onclick="setTxnType('paid')">❤️ Paid (Diya)</button>
+        </div>
+      </div>
+      <div class="txn-form">
+        <div class="txn-field">
+          <label>Amount (₹)</label>
+          <input type="number" id="txnAmount" placeholder="0" min="0" />
+        </div>
+        <div class="txn-field">
+          <label>Date</label>
+          <input type="date" id="txnDate" value="${new Date().toISOString().split('T')[0]}" />
+        </div>
+        <div class="txn-field">
+          <label>Note</label>
+          <input id="txnNote" placeholder="Invoice no / remarks..." />
+        </div>
+        <button class="txn-submit-btn" onclick="addTransaction()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="txn-table-wrap">
+      <div class="txn-table-header">
+        <span>📋 Transaction History</span>
+        <div style="display:flex;gap:8px">
+          <button class="whatsapp-btn" onclick="sendWhatsApp('${client.id}')">
+            💬 WhatsApp Reminder
+          </button>
+        </div>
+      </div>
+      ${clientTxns.length === 0 ? `<div class="txn-empty">Koi transaction nahi hai abhi tak</div>` : `
+      <div style="overflow-x:auto">
+      <table class="txn-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Note</th>
+            <th style="text-align:right">Amount</th>
+            <th style="text-align:right">Balance</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${txnWithBal.map(t => {
+            const isCredit = t.type === 'received';
+            const isInv = t.type === 'invoice';
+            const typeLabel = t.type === 'received' ? '💚 Received' : t.type === 'paid' ? '❤️ Paid' : '🧾 Invoice';
+            const badgeCls = t.type === 'received' ? 'received' : t.type === 'paid' ? 'paid' : 'invoice';
+            const amtCls = isCredit ? 'credit' : 'debit';
+            const amtSign = isCredit ? '−' : '+';
+            const runBal = t.runningBal;
+            const runClass = runBal > 0 ? 'due' : runBal < 0 ? 'advance' : 'clear';
+            const runColor = runBal > 0 ? 'var(--red)' : runBal < 0 ? 'var(--green)' : 'var(--muted)';
+            return `<tr>
+              <td style="font-size:11px;color:var(--muted)">${new Date(t.date).toLocaleDateString('en-IN')}</td>
+              <td><span class="txn-badge ${badgeCls}">${typeLabel}</span></td>
+              <td style="font-size:11px">${t.note || '—'}</td>
+              <td style="text-align:right"><span class="txn-amount ${amtCls}">${amtSign}₹${t.amount.toLocaleString('en-IN')}</span></td>
+              <td style="text-align:right;font-weight:800;font-family:'JetBrains Mono',monospace;font-size:11px;color:${runColor}">₹${Math.abs(runBal).toLocaleString('en-IN')}</td>
+              <td><button class="txn-del-btn" onclick="deleteTxn('${t.id}')">🗑</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>
+      `}
+    </div>
   `;
+  // Set default txn type
+  currentTxnType = 'received';
 }
 
-function markPaid(id) {
-  const records = getRecords();
-  const r = records.find(r => r.id === id);
-  if (!r) return;
-  r.status = 'PAID';
-  r.paid = r.grand;
-  r.balance = '₹0.00';
-  r.paidAmt = r.grandAmt;
-  setRecords(records);
-  renderRecords();
+// ── TXN TYPE ──
+let currentTxnType = 'received';
+function setTxnType(type) {
+  currentTxnType = type;
+  document.getElementById('txnTypeReceived').className = 'txn-type-btn' + (type === 'received' ? ' active-received' : '');
+  document.getElementById('txnTypePaid').className = 'txn-type-btn' + (type === 'paid' ? ' active-paid' : '');
 }
 
-function deleteRecord(id) {
-  if (!confirm('Delete this record?')) return;
-  setRecords(getRecords().filter(r => r.id !== id));
-  renderRecords();
+function addTransaction() {
+  if (!activeClientId) return;
+  const amount = parseFloat(document.getElementById('txnAmount').value) || 0;
+  if (amount <= 0) { alert('Amount enter karo!'); return; }
+  const date = document.getElementById('txnDate').value || new Date().toISOString().split('T')[0];
+  const note = document.getElementById('txnNote').value.trim();
+  const txn = { id: genId(), clientId: activeClientId, type: currentTxnType, amount, note, date };
+  khataTransactions.push(txn);
+  saveKhata();
+  document.getElementById('txnAmount').value = '';
+  document.getElementById('txnNote').value = '';
+  renderLedger();
+  renderClientList();
+  updateSummaryCards();
+  updateDueBadge();
 }
 
-function editRecord(id) {
-  const records = getRecords();
-  const r = records.find(r => r.id === id);
-  if (!r) return;
+function deleteTxn(txnId) {
+  if (!confirm('Yeh transaction delete karna hai?')) return;
+  khataTransactions = khataTransactions.filter(t => t.id !== txnId);
+  saveKhata();
+  renderLedger();
+  renderClientList();
+  updateSummaryCards();
+  updateDueBadge();
+}
 
-  // Load client info
-  document.getElementById('clientName').value = r.client || '';
-  document.getElementById('clientEmail').value = r.savedEmail || '';
-  document.getElementById('clientPhone').value = r.savedPhone || '';
-  document.getElementById('invoiceNo').value = r.invNo || '';
-  document.getElementById('invoiceDate').value = r.date || '';
-  document.getElementById('orderNotes').value = r.notes || '';
-  document.getElementById('paidInput').value = r.paidAmt || 0;
-  document.getElementById('discountInput').value = r.savedDiscount || 0;
-  document.getElementById('taxInput').value = r.savedTax || 0;
+function deleteClient(clientId) {
+  if (!confirm('Client aur uski saari transactions delete karni hain?')) return;
+  khataClients = khataClients.filter(c => c.id !== clientId);
+  khataTransactions = khataTransactions.filter(t => t.clientId !== clientId);
+  activeClientId = null;
+  saveKhata();
+  renderClientList();
+  renderLedger();
+  updateSummaryCards();
+  updateDueBadge();
+}
 
-  // Payment method
-  const methodEl = document.getElementById('payMethod');
-  for (let i = 0; i < methodEl.options.length; i++) {
-    if (methodEl.options[i].value === r.method || methodEl.options[i].text === r.method) {
-      methodEl.selectedIndex = i; break;
-    }
+// ── ADD CLIENT MODAL ──
+function openAddClientModal() { document.getElementById('addClientModal').classList.add('show'); }
+function closeAddClientModal() { document.getElementById('addClientModal').classList.remove('show'); }
+function saveNewClient() {
+  const name = document.getElementById('newClientName').value.trim();
+  if (!name) { alert('Client ka naam daalo!'); return; }
+  const client = {
+    id: genId(),
+    name,
+    phone: document.getElementById('newClientPhone').value.trim(),
+    email: document.getElementById('newClientEmail').value.trim(),
+    openingBalance: parseFloat(document.getElementById('newClientBalance').value) || 0,
+    createdAt: new Date().toISOString()
+  };
+  khataClients.push(client);
+  saveKhata();
+  closeAddClientModal();
+  document.getElementById('newClientName').value = '';
+  document.getElementById('newClientPhone').value = '';
+  document.getElementById('newClientEmail').value = '';
+  document.getElementById('newClientBalance').value = '0';
+  renderClientList();
+  updateSummaryCards();
+  updateDueBadge();
+  selectClient(client.id);
+}
+
+// ── SAVE INVOICE TO KHATA ──
+function saveInvoiceToKhata() {
+  const clientNameInput = document.getElementById('clientName').value.trim();
+  const invoiceNo = document.getElementById('invoiceNo').value.trim();
+  const paid = parseFloat(document.getElementById('paidInput').value) || 0;
+  const grandEl = document.getElementById('tGrand').textContent;
+  // Parse grand total from display
+  const grandRaw = grandEl.replace(/[₹$,\s]/g,'');
+  const grandTotal = parseFloat(grandRaw) || 0;
+  const balance = grandTotal - paid;
+
+  if (grandTotal <= 0) { alert('Invoice mein koi item nahi hai!'); return; }
+  if (!clientNameInput) { alert('Client ka naam invoice mein daalo!'); return; }
+
+  // Find or create client
+  let client = khataClients.find(c => c.name.toLowerCase() === clientNameInput.toLowerCase());
+  if (!client) {
+    client = {
+      id: genId(), name: clientNameInput,
+      phone: document.getElementById('clientPhone').value.trim(),
+      email: document.getElementById('clientEmail').value.trim(),
+      openingBalance: 0, createdAt: new Date().toISOString()
+    };
+    khataClients.push(client);
   }
 
-  // Restore EXACT saved items — no confirm, no new invoice
-  items = (r.savedItems && r.savedItems.length > 0)
-    ? r.savedItems.map(it => ({ ...it }))
-    : [];
-  idCounter = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
+  // Add invoice transaction (due)
+  if (grandTotal > 0) {
+    khataTransactions.push({
+      id: genId(), clientId: client.id, type: 'invoice',
+      amount: currency === 'INR' ? grandTotal : grandTotal * exchangeRate,
+      note: `Invoice ${invoiceNo}`, date: document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0]
+    });
+  }
 
-  // Currency
-  if (r.savedCurrency) setCurrency(r.savedCurrency);
+  // Add payment if any
+  if (paid > 0) {
+    khataTransactions.push({
+      id: genId(), clientId: client.id, type: 'received',
+      amount: currency === 'INR' ? paid : paid * exchangeRate,
+      note: `Payment vs ${invoiceNo}`, date: document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0]
+    });
+  }
 
-  // Track which record is being edited
-  window._editingRecordId = id;
+  saveKhata();
+  updateSummaryCards();
+  updateDueBadge();
+  activeClientId = client.id;
 
-  renderTable();
-  recalc();
-  closeRecords();
+  // Show success then switch tab
+  const btn = document.querySelector('.save-khata-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ Saved to Khatabook!';
+  btn.style.background = '#10b981';
+  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
 
-  // Scroll invoice into view
-  document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
-
-  // Purple flash border — edit mode indicator
-  const paper = document.getElementById('invoice-paper');
-  paper.style.outline = '3px solid #6366f1';
-  setTimeout(() => { paper.style.outline = 'none'; }, 2500);
+  switchTab('khata');
+  renderClientList();
+  renderLedger();
 }
 
-function closeEdit() { document.getElementById('editModal').classList.remove('show'); }
-
-function saveEdit() {
-  const id = parseInt(document.getElementById('editId').value);
-  const records = getRecords();
-  const r = records.find(r => r.id === id);
-  if (!r) return;
-
-  r.client = document.getElementById('editClient').value.trim() || r.client;
-  r.invNo = document.getElementById('editInvNo').value.trim() || r.invNo;
-  r.status = document.getElementById('editStatus').value;
-  r.paidAmt = parseFloat(document.getElementById('editPaid').value) || 0;
-  r.notes = document.getElementById('editNotes').value.trim();
-  const days = parseInt(document.getElementById('editExpiry').value) || 7;
-  r.expiryDays = days;
-  // Recalculate expiry from save date
-  const savedAt = new Date(r.savedAt);
-  const expiry = new Date(savedAt);
-  expiry.setDate(expiry.getDate() + days);
-  r.expiryDate = expiry.toISOString();
-  // Update display values
-  r.paid = `₹${r.paidAmt.toFixed(2)}`;
-  r.balance = `₹${Math.max(0, r.grandAmt - r.paidAmt).toFixed(2)}`;
-  if (r.paidAmt >= r.grandAmt && r.grandAmt > 0) r.status = 'PAID';
-
-  setRecords(records);
-  closeEdit();
-  renderRecords();
+// ── WHATSAPP REMINDER ──
+function sendWhatsApp(clientId) {
+  const client = khataClients.find(c => c.id === clientId);
+  if (!client) return;
+  const bal = getClientBalance(clientId);
+  if (bal <= 0) { alert('Is client ka koi due nahi hai!'); return; }
+  const phone = client.phone ? client.phone.replace(/\D/g,'') : '';
+  const msg = encodeURIComponent(
+    `Namaskar ${client.name} ji! 🙏\n\nYaad dila raha hun ki aapka ₹${bal.toLocaleString('en-IN')} outstanding balance hai VIPER STORE ke saath.\n\nKripya jaldi payment karein.\n\nShukriya! 🙏\n— VIPER STORE`
+  );
+  const url = phone ? `https://wa.me/91${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+  window.open(url, '_blank');
 }
 
-function escHTMLR(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
-
-// ── ADD ORDER ──
-function openAddOrder(id) {
-  const records = getRecords();
-  const r = records.find(r => r.id === id);
-  if (!r) return;
-  document.getElementById('addOrderRecId').value = id;
-  document.getElementById('addOrderClientLabel').textContent = `Client: ${r.client} · ${r.invNo}`;
-  document.getElementById('aoService').value = '';
-  document.getElementById('aoRate').value = '';
-  document.getElementById('aoQty').value = 1;
-  document.getElementById('aoStatus').value = 'DUE';
-  document.getElementById('aoNote').value = '';
-  const m = document.getElementById('addOrderModal');
-  m.style.display = 'flex';
+// ── EXPORT CSV ──
+function exportCSV() {
+  if (khataClients.length === 0) { alert('Koi client nahi hai!'); return; }
+  let csv = 'Client Name,Phone,Email,Balance (₹),Status\n';
+  khataClients.forEach(c => {
+    const bal = getClientBalance(c.id);
+    const status = bal > 0 ? 'Due' : bal < 0 ? 'Advance' : 'Clear';
+    csv += `"${c.name}","${c.phone||''}","${c.email||''}","${Math.abs(bal)}","${status}"\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'viper_khatabook.csv'; a.click();
 }
 
-function closeAddOrder() {
-  document.getElementById('addOrderModal').style.display = 'none';
-}
-
-function saveAddOrder() {
-  const id = parseInt(document.getElementById('addOrderRecId').value);
-  const service = document.getElementById('aoService').value.trim();
-  const rate = parseFloat(document.getElementById('aoRate').value) || 0;
-  const qty = parseInt(document.getElementById('aoQty').value) || 1;
-  const status = document.getElementById('aoStatus').value;
-  const note = document.getElementById('aoNote').value.trim();
-
-  if (!service) { document.getElementById('aoService').focus(); return; }
-
-  const records = getRecords();
-  const r = records.find(r => r.id === id);
-  if (!r) return;
-  if (!r.orders) r.orders = [];
-  r.orders.push({ service, rate, qty, status, note, addedAt: new Date().toISOString() });
-  setRecords(records);
-  closeAddOrder();
-  renderRecords();
-}
-
-function toggleOrderStatus(recId, orderIdx) {
-  const records = getRecords();
-  const r = records.find(r => r.id === recId);
-  if (!r || !r.orders || !r.orders[orderIdx]) return;
-  const cycle = { 'DUE': 'PARTIAL', 'PARTIAL': 'PAID', 'PAID': 'DUE' };
-  r.orders[orderIdx].status = cycle[r.orders[orderIdx].status] || 'DUE';
-  setRecords(records);
-  renderRecords();
-}
-
-function deleteOrder(recId, orderIdx) {
-  const records = getRecords();
-  const r = records.find(r => r.id === recId);
-  if (!r || !r.orders) return;
-  r.orders.splice(orderIdx, 1);
-  setRecords(records);
-  renderRecords();
-}
-
-function editOrderField(recId, orderIdx, field, value) {
-  const records = getRecords();
-  const r = records.find(r => r.id === recId);
-  if (!r || !r.orders || !r.orders[orderIdx]) return;
-  if (field === 'rate') r.orders[orderIdx].rate = parseFloat(value) || 0;
-  else if (field === 'qty') r.orders[orderIdx].qty = parseInt(value) || 1;
-  else r.orders[orderIdx][field] = value;
-  setRecords(records);
-  // Only re-render for status/delete — not on text input (would lose focus)
-  if (field === 'status') renderRecords();
-}
-
-window.newInvoice = newInvoice;
-window.saveRecord = saveRecord;
-window.openRecords = openRecords;
-window.closeRecords = closeRecords;
-window.setFilter = setFilter;
-window.renderRecords = renderRecords;
-window.editRecord = editRecord;
-window.closeEdit = closeEdit;
-window.saveEdit = saveEdit;
-window.markPaid = markPaid;
-window.deleteRecord = deleteRecord;
-window.openAddOrder = openAddOrder;
-window.closeAddOrder = closeAddOrder;
-window.saveAddOrder = saveAddOrder;
-window.toggleOrderStatus = toggleOrderStatus;
-window.deleteOrder = deleteOrder;
-window.editOrderField = editOrderField;
-
-document.getElementById('addOrderModal').addEventListener('click', function(e) {
-  if (e.target === this) closeAddOrder();
-});
-
-// Close modals on backdrop click
-document.getElementById('recordsModal').addEventListener('click', function(e) {
-  if (e.target === this) closeRecords();
-});
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEdit();
-});
+// ── EXPOSE GLOBALS ──
+window.addItem = addItem;
 window.addCustomItem = addCustomItem;
 window.removeItem = removeItem;
 window.changeQty = changeQty;
 window.setQty = setQty;
 window.setNote = setNote;
-window.setName = setName;
-window.setRate = setRate;
 window.recalc = recalc;
 window.toggleCat = toggleCat;
 window.toggleCustom = toggleCustom;
@@ -1530,6 +1520,19 @@ window.downloadPDF = downloadPDF;
 window.toggleSelect = toggleSelect;
 window.clearSelection = clearSelection;
 window.addSelected = addSelected;
+window.switchTab = switchTab;
+window.selectClient = selectClient;
+window.openAddClientModal = openAddClientModal;
+window.closeAddClientModal = closeAddClientModal;
+window.saveNewClient = saveNewClient;
+window.addTransaction = addTransaction;
+window.deleteTxn = deleteTxn;
+window.deleteClient = deleteClient;
+window.setTxnType = setTxnType;
+window.saveInvoiceToKhata = saveInvoiceToKhata;
+window.sendWhatsApp = sendWhatsApp;
+window.exportCSV = exportCSV;
+window.renderClientList = renderClientList;
 </script>
 </body>
 </html>
