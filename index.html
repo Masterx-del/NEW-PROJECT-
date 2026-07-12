@@ -2230,7 +2230,7 @@ function updateDashRecentOrders(recent){
       <div class="recent-order-dot" style="background:${dotColor[status]||'#94a3b8'};"></div>
       <div style="flex:1;overflow:hidden;">
         <div style="font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pName}</div>
-        <div style="font-size:11px;color:var(--text-secondary);">${o.userEmail||'—'} · ${timeStr}</div>
+        <div style="font-size:11px;color:var(--text-secondary);">${o.guestId||o.userEmail||'—'} · ${timeStr}</div>
       </div>
       <div style="font-weight:700;font-size:11px;color:var(--accent-success);white-space:nowrap;">₹${price}</div>
     </div>`;
@@ -2377,7 +2377,7 @@ function buildOrderCardHTML(id, o) {
 <div class="order-info">
   <div><span class="order-field">Product</span><span class="order-value">${productName}</span></div>
   <div><span class="order-field">Amount</span><span class="order-value" style="color:var(--accent-success);font-weight:700;">₹${price}</span></div>
-  <div><span class="order-field">User Email</span><span class="order-value">${o.userEmail||'N/A'}</span></div>
+  <div><span class="order-field">User ID</span><span class="order-value" style="font-family:monospace;font-size:11px;cursor:pointer;" onclick="copyToClip('${o.guestId||o.userEmail||''}')" title="Click to copy">${o.guestId||o.userEmail||'N/A'} ${(o.guestId||o.userEmail)?'<i class="fas fa-copy" style="font-size:10px;opacity:0.5;"></i>':''}</span></div>
   <div><span class="order-field">UTR / TxID</span><span class="order-value" style="color:var(--accent-danger);font-family:monospace;cursor:pointer;" onclick="copyToClip('${o.utrId||''}')" title="Click to copy">${o.utrId||'N/A'} ${o.utrId?'<i class="fas fa-copy" style="font-size:10px;opacity:0.5;"></i>':''}</span></div>
   ${o.targetLink?`<div style="grid-column:1/-1"><span class="order-field">Link / Username</span><span onclick="copyToClip('${o.targetLink}')" class="order-value" style="color:var(--accent-primary);text-decoration:underline;cursor:pointer;word-break:break-all;">${o.targetLink} <i class="fas fa-copy" style="font-size:11px;opacity:0.6;"></i></span></div>`:''}
   ${o.targetLink2?`<div style="grid-column:1/-1"><span class="order-field">Link 2</span><span onclick="copyToClip('${o.targetLink2}')" class="order-value" style="color:var(--accent-primary);text-decoration:underline;cursor:pointer;word-break:break-all;">${o.targetLink2}</span></div>`:''}
@@ -2438,7 +2438,7 @@ function _getFilteredOrders(data) {
         else if(filter!=='subscription'&&filter!=='free'&&filter!=='paid'&&status!==filter)return false;
       }
       if(search){
-        const hay=(o.userEmail||'')+'|'+id+'|'+id.slice(-6).toUpperCase()+'|'+(o.utrId||'')+'|'+(o.productSnapshot?.title||'')+'|'+(o.productSnapshot?.planName||'')+'|'+(o.targetLink||'');
+        const hay=(o.userEmail||'')+'|'+(o.guestId||'')+'|'+id+'|'+id.slice(-6).toUpperCase()+'|'+(o.utrId||'')+'|'+(o.productSnapshot?.title||'')+'|'+(o.productSnapshot?.planName||'')+'|'+(o.targetLink||'');
         if(!hay.toLowerCase().includes(search))return false;
       }
       return true;
@@ -3521,13 +3521,13 @@ window.toggleCouponActive=async(id,isActive)=>{
 // ── CSV EXPORT ────────────────────────────────────────────────────────
 window.exportOrdersCSV=()=>{
   if(!globalOrdersData||!Object.keys(globalOrdersData).length)return showToast('⚠️ No orders to export');
-  const rows=[['Order ID','Product','Amount','User Email','UTR/TxID','Status','Link','Date']];
+  const rows=[['Order ID','Product','Amount','User ID','UTR/TxID','Status','Link','Date']];
   Object.entries(globalOrdersData).forEach(([id,o])=>{
     rows.push([
       id.slice(-6).toUpperCase(),
       (o.productSnapshot?.title||o.productSnapshot?.planName||'N/A').replace(/,/g,' '),
       o.finalAmount||0,
-      o.userEmail||'N/A',
+      o.guestId||o.userEmail||'N/A',
       o.utrId||'N/A',
       o.status||'pending',
       (o.targetLink||'').replace(/,/g,' '),
