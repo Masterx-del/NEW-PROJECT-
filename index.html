@@ -2367,6 +2367,7 @@ function buildOrderCardHTML(id, o) {
     <button onclick="copyToClip('${id.slice(-6).toUpperCase()}')" title="Copy Order ID" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:11px;padding:2px 4px;border-radius:4px;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-secondary)'"><i class="fas fa-copy"></i></button>
     ${o.isSubscription?'<span class="badge badge-manual" style="margin-left:2px;font-size:10px;">SUB</span>':''}
     ${o.apiOrderId?`<span class="badge badge-api" style="margin-left:2px;font-size:10px;"><i class="fas fa-robot"></i> API#${o.apiOrderId}</span>`:''}
+    ${(!o.apiOrderId&&['error','failed','skipped'].includes(o.apiStatus))?`<span class="badge" style="margin-left:2px;font-size:10px;background:rgba(239,68,68,0.12);color:var(--accent-danger);border:1px solid rgba(239,68,68,0.3);"><i class="fas fa-triangle-exclamation"></i> API Failed</span>`:''}
     ${freeBadge}
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
@@ -2386,12 +2387,14 @@ function buildOrderCardHTML(id, o) {
   ${o.targetLink5?`<div style="grid-column:1/-1"><span class="order-field">Link 5</span><span onclick="copyToClip('${o.targetLink5}')" class="order-value" style="color:var(--accent-primary);text-decoration:underline;cursor:pointer;word-break:break-all;">${o.targetLink5}</span></div>`:''}
   ${o.pollOption?`<div style="grid-column:1/-1"><span class="order-field">Poll Vote</span><span class="order-value">${o.pollOption}</span></div>`:''}
   ${o.apiOrderId?`<div style="grid-column:1/-1"><span class="order-field" style="color:#10b981;"><i class="fas fa-robot"></i> API Order ID</span><span class="order-value" style="color:#10b981;font-family:monospace;">${o.apiOrderId}</span></div>`:''}
-  ${(o.apiStatus==='error'&&o.apiRawResponse)?`<div style="grid-column:1/-1"><span class="order-field" style="color:var(--accent-danger);"><i class="fas fa-exclamation-circle"></i> API Error</span><span class="order-value" style="color:var(--accent-danger);font-family:monospace;font-size:11px;word-break:break-all;">${o.apiRawResponse}</span></div>`:''}
+  ${(['error','failed','skipped'].includes(o.apiStatus)&&o.apiRawResponse)?`<div style="grid-column:1/-1"><span class="order-field" style="color:var(--accent-danger);"><i class="fas fa-exclamation-circle"></i> API ${o.apiStatus==='skipped'?'Skipped':o.apiStatus==='failed'?'Failed':'Error'}</span><span class="order-value" style="color:var(--accent-danger);font-family:monospace;font-size:11px;word-break:break-all;">${o.apiRawResponse}</span></div>`:''}
+  ${o.apiStatus==='calling'?`<div style="grid-column:1/-1"><span class="order-field" style="color:#f59e0b;"><i class="fas fa-spinner fa-spin"></i> API Status</span><span class="order-value" style="color:#f59e0b;">Calling provider... (refresh in a few sec)</span></div>`:''}
 </div>
 <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;">
   ${status==='pending'?`<button class="btn btn-sm btn-success" onclick="updateStatus('${id}','progress')" style="flex:1;"><i class="fas fa-play"></i> Accept</button>`:''}
   ${status==='progress'?`<button class="btn btn-sm btn-success" onclick="updateStatus('${id}','completed')" style="flex:1;"><i class="fas fa-check"></i> Complete</button>`:''}
   ${(status==='pending'||status==='progress')?`<button class="btn btn-sm btn-danger" onclick="confirmReject('${id}')" style="flex:1;"><i class="fas fa-times"></i> Reject</button>`:''}
+  ${(!o.apiOrderId&&['error','failed','skipped'].includes(o.apiStatus))?`<button class="btn btn-sm" style="flex:1;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" onclick="retryApiCall('${id}')"><i class="fas fa-rotate"></i> Retry API</button>`:''}
   <select style="padding:10px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:11px;flex:1;min-width:120px;font-family:inherit;" onchange="confirmStatusChange('${id}',this.value,'${status}',this)">
     <option value="" disabled selected style="display:none;">⚡ Change Status</option>
     <option value="pending">⏳ Pending</option>
@@ -2557,6 +2560,36 @@ window.confirmStatusChange=async(id,newVal,oldVal,sel)=>{
   }
 };
 
+async function attemptApiCall(id, order){
+  const snap=order.productSnapshot||{};
+  const apiUrl=snap.apiUrl||globalApiConfig.url;const apiKey=snap.apiKey||globalApiConfig.key;
+  const serviceId=snap.serviceId||'';const quantity=snap.quantity||snap.baseQuantity||'';
+  if(apiUrl&&apiKey&&serviceId&&quantity&&order.targetLink){
+    try{
+      const payload=`key=${encodeURIComponent(apiKey)}&action=add&service=${encodeURIComponent(serviceId)}&link=${encodeURIComponent(order.targetLink)}&quantity=${encodeURIComponent(quantity)}`;
+      const proxies=[
+        {url:apiUrl,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
+        {url:`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
+        {url:`https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl+'?'+payload)}`,method:'GET',headers:{},body:null},
+      ];
+      let apiJson=null,rawText='',lastErr='No response';
+      for(const req of proxies){try{const opts={method:req.method,headers:req.headers,cache:'no-store'};if(req.body)opts.body=req.body;const res=await fetch(req.url,opts);rawText=await res.text();const p=JSON.parse(rawText);if(p&&typeof p==='object'&&!Array.isArray(p)){apiJson=p;break;}}catch(e){lastErr=e.message||'fetch failed';}}
+      if(apiJson){const oid=apiJson.order??apiJson.order_id??apiJson.id??null;const hasErr=apiJson.error||apiJson.status==='error';if(!hasErr){await update(ref(db,`orders/${id}`),{apiOrderId:oid?String(oid):'placed',apiStatus:'placed',apiRawResponse:rawText.substring(0,500)});showToast('🤖 API order placed!'+(oid?' ID: '+oid:''));}else{await update(ref(db,`orders/${id}`),{apiStatus:'error',apiRawResponse:rawText.substring(0,500)});showToast('⚠️ API error: '+(apiJson.error||apiJson.message||'Check API response'));}}
+      else{await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'All proxies failed: '+(rawText||lastErr).substring(0,400)});showToast('⚠️ API did not respond. Order in progress (manual).');}
+    }catch(apiErr){await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'Exception: '+apiErr.message}).catch(()=>{});showToast('⚠️ API failed: '+apiErr.message);}
+  } else {
+    await update(ref(db,`orders/${id}`),{apiStatus:'skipped',apiRawResponse:`Missing config: url=${!!apiUrl} key=${!!apiKey} svc=${!!serviceId} qty=${!!quantity} link=${!!order.targetLink}`}).catch(()=>{});
+    showToast('⚠️ API config incomplete — check API URL/Key/Service ID/Quantity/Link');
+  }
+}
+window.retryApiCall=async(id)=>{
+  const order=globalOrdersData?.[id];
+  if(!order) return showToast('❌ Order not found');
+  await update(ref(db,`orders/${id}`),{apiStatus:'calling'}).catch(()=>{});
+  showToast('🔄 Retrying API call...');
+  await attemptApiCall(id, order);
+};
+
 window.updateStatus=async(id,s)=>{
   try{
     await update(ref(db,`orders/${id}`),{status:s,...(s==='progress'&&!globalOrdersData?.[id]?.progressAt?{progressAt:new Date().toISOString()}:{})});
@@ -2620,23 +2653,7 @@ window.updateStatus=async(id,s)=>{
         else{await remove(subDbRef);}
       }
       if(s==='progress'&&!order.isSubscription){
-        const snap=order.productSnapshot||{};
-        const apiUrl=snap.apiUrl||globalApiConfig.url;const apiKey=snap.apiKey||globalApiConfig.key;
-        const serviceId=snap.serviceId||'';const quantity=snap.quantity||'';
-        if(apiUrl&&apiKey&&serviceId&&quantity&&order.targetLink){
-          try{
-            const payload=`key=${encodeURIComponent(apiKey)}&action=add&service=${encodeURIComponent(serviceId)}&link=${encodeURIComponent(order.targetLink)}&quantity=${encodeURIComponent(quantity)}`;
-            const proxies=[
-              {url:apiUrl,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
-              {url:`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
-              {url:`https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl+'?'+payload)}`,method:'GET',headers:{},body:null},
-            ];
-            let apiJson=null,rawText='';
-            for(const req of proxies){try{const opts={method:req.method,headers:req.headers,cache:'no-store'};if(req.body)opts.body=req.body;const res=await fetch(req.url,opts);rawText=await res.text();const p=JSON.parse(rawText);if(p&&typeof p==='object'&&!Array.isArray(p)){apiJson=p;break;}}catch(e){}}
-            if(apiJson){const oid=apiJson.order??apiJson.order_id??apiJson.id??null;const hasErr=apiJson.error||apiJson.status==='error';if(!hasErr){await update(ref(db,`orders/${id}`),{apiOrderId:oid?String(oid):'placed',apiStatus:'placed',apiRawResponse:rawText.substring(0,500)});showToast('🤖 API order placed!'+(oid?' ID: '+oid:''));}else{await update(ref(db,`orders/${id}`),{apiStatus:'error',apiRawResponse:rawText.substring(0,500)});showToast('⚠️ API error: '+(apiJson.error||apiJson.message||'Check API response'));}}
-            else{showToast('⚠️ API did not respond. Order in progress (manual).');}
-          }catch(apiErr){showToast('⚠️ API failed: '+apiErr.message);}
-        }
+        await attemptApiCall(id, order);
       }
     }
     if(s!=='rejected') showToast('✅ Status updated');
