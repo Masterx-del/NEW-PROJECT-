@@ -461,9 +461,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   <div class="drawer-nav-item" data-tab="linkMgmt"><i class="fas fa-link" style="width:18px;text-align:center;"></i> Link Management</div>
   <div class="drawer-nav-item" data-tab="settings"><i class="fas fa-cog" style="width:18px;text-align:center;"></i> Settings</div>
 </nav>
-<div style="padding:20px;border-top:1px solid var(--border-color);margin-top:auto;">
-  <button class="btn btn-ghost" id="drawerLogoutBtn" style="color:var(--accent-danger);border-color:var(--border-color);"><i class="fas fa-sign-out-alt"></i> Secure Logout</button>
-</div>
 </div>
 
 <!-- ── BOTTOM NAVIGATION BAR ── -->
@@ -509,28 +506,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <button class="btn btn-sm" id="loadServicesBtn" onclick="loadServicesFromAPI()"><i class="fas fa-sync-alt"></i> Load Services from Panel</button>
     </div>
   </div>
-</div>
-
-<!-- SETUP SCREEN -->
-<div id="setupScreen" class="login-container" style="display:none;">
-<div class="login-card">
-<h1 class="login-title">System Setup</h1>
-<div class="input-group"><label>Master Admin Name</label><input type="text" id="setupName" placeholder="Your Name"></div>
-<div class="input-group"><label>Email Address</label><input type="email" id="setupEmail" placeholder="admin@example.com"></div>
-<div class="input-group"><label>Secure Password (min 8 chars)</label><input type="password" id="setupPassword" placeholder="••••••••"></div>
-<div class="input-group"><label>Confirm Password</label><input type="password" id="setupConfirmPassword" placeholder="••••••••"></div>
-<button class="btn" id="setupBtn">Initialize System</button>
-</div>
-</div>
-
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" class="login-container" style="display:none;">
-<div class="login-card">
-<h1 class="login-title">Admin Portal</h1>
-<div class="input-group"><label>Email Address</label><input type="email" id="loginEmail" placeholder="admin@example.com"></div>
-<div class="input-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-<button class="btn" id="loginBtn">Secure Login</button>
-</div>
 </div>
 
 <!-- MAIN DASHBOARD -->
@@ -1226,7 +1201,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <!-- SETTINGS TAB -->
 <div id="settingsTab" class="tab-content">
-<div class="card"><h2 class="card-title">Administrator Details</h2><div style="background:var(--input-bg);padding:18px;border-radius:8px;font-size:12px;border:1px solid var(--border-color);"><p style="margin-bottom:10px;"><strong>Email:</strong> <span id="adminEmailDisplay" style="color:var(--text-secondary);"></span></p></div></div>
 
 <!-- MANAGE CATEGORIES CARD -->
 <div class="card" style="border-color:var(--accent-primary);">
@@ -1436,7 +1410,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+
 import { getDatabase, ref, set, get, push, remove, onValue, update, onChildAdded, onChildChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
 const firebaseConfig = window.__APP_CONFIG__;
@@ -1445,7 +1419,6 @@ if (!firebaseConfig || !firebaseConfig.apiKey) {
   alert('⚠️ App configuration error — contact your system administrator.');
 }
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
 
 // ── HELPERS ─────────────────────────────────────────────────────────
@@ -1561,74 +1534,11 @@ window.switchTab=(tab,isUser=false)=>{
   if(tab==='subscriptions'){renderExclusiveProductPicker();updateExclusiveSelectedPreview();}
 };
 
-// ── AUTH ─────────────────────────────────────────────────────────────
-let currentAdminUid = null;
-
-onAuthStateChanged(auth,async(user)=>{
-  if(user){
-    try {
-      // ✅ SECURITY FIX: Verify admin status from Firebase before granting access
-      // DO NOT use set(meta/admins/uid) here — that was a critical security hole
-      // allowing ANY logged-in user to promote themselves to admin.
-      const adminSnap = await get(ref(db,`meta/admins/${user.uid}`));
-      if(!adminSnap.exists()){
-        // Not an admin — force logout immediately
-        await signOut(auth);
-        $('loginScreen').style.display='flex';
-        $('adminDashboard').style.display='none';
-        menuToggle.classList.add('hidden');
-        alert('❌ Access Denied. You are not an authorized administrator.\n\nIf you are the owner, add your UID to meta/admins in Firebase Console.');
-        return;
-      }
-      currentAdminUid = user.uid;
-      $('loginScreen').style.display='none';$('setupScreen').style.display='none';
-      $('adminDashboard').style.display='block';menuToggle.classList.remove('hidden');
-      // ── Show bottom nav bar ──
-      const bn=$('bottomNav'); if(bn) bn.style.display='flex';
-      $('drawerUserName').textContent=user.displayName||'Admin';
-      $('drawerUserEmail').textContent=user.email;
-      $('adminEmailDisplay').textContent=user.email;
-      initData();
-    } catch(e) {
-      console.error('[Auth] Admin verification failed:',e);
-      await signOut(auth);
-      $('loginScreen').style.display='flex';
-      $('adminDashboard').style.display='none';
-      menuToggle.classList.add('hidden');
-      alert('⚠️ Authentication error. Please try again.\n\n'+e.message);
-    }
-  } else {
-    const snap=await get(ref(db,'meta/adminSetup'));
-    if(snap.exists()&&snap.val().completed){$('loginScreen').style.display='flex';}
-    else{$('setupScreen').style.display='flex';}
-    $('adminDashboard').style.display='none';menuToggle.classList.add('hidden');
-    const bn=$('bottomNav'); if(bn) bn.style.display='none';
-  }
-});
-
-$('setupBtn').addEventListener('click',async()=>{
-  const name=$('setupName').value,email=$('setupEmail').value,pass=$('setupPassword').value,confirm=$('setupConfirmPassword').value;
-  if(!name||!email||!pass)return alert('Fill all fields');
-  if(pass!==confirm)return alert('Passwords do not match');
-  if(pass.length<8)return alert('Password minimum 8 characters');
-  showLoading('Creating Administrator...');
-  try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    await updateProfile(cred.user,{displayName:name});
-    await set(ref(db,'meta/adminSetup'),{completed:true,email,name});
-    // ✅ First-time setup: register this UID as the master admin
-    await set(ref(db,`meta/admins/${cred.user.uid}`),true);
-    hideLoading();showToast('✅ System Initialized!');
-  }
-  catch(e){hideLoading();alert(e.message);}
-});
-$('loginBtn').addEventListener('click',async()=>{
-  const email=$('loginEmail').value,pass=$('loginPassword').value;
-  if(!email||!pass)return alert('Enter credentials');
-  showLoading('Authenticating...');
-  try{await signInWithEmailAndPassword(auth,email,pass);hideLoading();}catch(e){hideLoading();alert(e.message);}
-});
-$('drawerLogoutBtn').addEventListener('click',()=>signOut(auth));
+// ── LOGIN REMOVED — dashboard now loads directly for anyone with this URL ──
+$('adminDashboard').style.display='block';
+menuToggle.classList.remove('hidden');
+const _bn=$('bottomNav'); if(_bn) _bn.style.display='flex';
+initData();
 
 // ── INIT DATA ────────────────────────────────────────────────────────
 // ── AUTO COMPLETE: progress orders ke avgTime + 10 min baad complete ho jaate hain ──
