@@ -651,15 +651,37 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 <div class="card">
 <h2 class="card-title"><i class="fas fa-box-open"></i> <span id="productFormTitle">Add Product</span></h2>
 <input type="hidden" id="editProductId">
-<div class="input-group"><label>Product Title</label><input type="text" id="productTitle" placeholder="e.g., 1000 Instagram Followers"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-  <div class="input-group"><label>Main Category</label><select id="productCategory"></select></div>
-  <div class="input-group"><label>Sub Category</label><select id="productSubCategory"></select></div>
+
+<div id="multiModeToggleWrap" style="display:flex;gap:10px;margin-bottom:14px;">
+  <button type="button" class="btn btn-sm" id="singleModeBtn" style="flex:1;" onclick="setProductFormMode('single')"><i class="fas fa-file"></i> Single Product</button>
+  <button type="button" class="btn btn-sm btn-ghost" id="multiModeBtn" style="flex:1;" onclick="setProductFormMode('multi')"><i class="fas fa-layer-group"></i> Multiple Products</button>
 </div>
+
+<!-- SINGLE MODE: one title/price/time/order -->
+<div id="singleTitleBlock">
+<div class="input-group"><label>Product Title</label><input type="text" id="productTitle" placeholder="e.g., 1000 Instagram Followers"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
   <div class="input-group"><label>Price (₹) <span style="font-weight:400;text-transform:none;">(Put 0 for Free Daily)</span></label><input type="number" id="productDiscountPrice" placeholder="e.g., 99 or 0"></div>
   <div class="input-group"><label>Avg Delivery Time</label><input type="text" id="productAvgTime" placeholder="e.g., 16 Min, 1 Hr"></div>
   <div class="input-group"><label>Display Order <span style="font-weight:400;text-transform:none;">(rank in app)</span></label><input type="number" id="productDisplayOrder" placeholder="e.g., 1, 2, 3..." min="1"></div>
+</div>
+</div>
+
+<!-- MULTI MODE: repeatable rows, each becomes its own product on save -->
+<div id="multiRowsBlock" style="display:none;">
+  <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5;">
+    Har row apna alag product banega. Category, API config, Description, Features, Specification niche ek hi baar bharo — sab rows mein wahi apply hoga. Agar kisi row ka Service ID panel pe alag hai to us row mein bhar do, warna neeche wala shared Service ID use hoga.
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px;">
+    <div class="input-group" style="margin-bottom:0;"><label>Starting Display Order</label><input type="number" id="multiStartOrder" placeholder="e.g., 1" min="1"></div>
+  </div>
+  <div id="multiRowsList"></div>
+  <button type="button" class="btn btn-sm btn-ghost" style="width:auto;padding:8px 14px;margin-top:4px;" onclick="addMultiProductRow()"><i class="fas fa-plus"></i> Add Row</button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+  <div class="input-group"><label>Main Category</label><select id="productCategory"></select></div>
+  <div class="input-group"><label>Sub Category</label><select id="productSubCategory"></select></div>
 </div>
 
 <!-- API SECTION -->
@@ -671,7 +693,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
     <div class="input-group" style="margin-bottom:0;">
-      <label>Service ID</label>
+      <label id="productServiceIdLabel">Service ID</label>
       <div style="display:flex;gap:8px;">
         <input type="text" id="productServiceId" placeholder="Enter or pick from panel">
         <button class="btn btn-sm" style="width:auto;padding:0 12px;white-space:nowrap;" onclick="openServiceModal('product')" title="Browse services"><i class="fas fa-search"></i></button>
@@ -1861,18 +1883,88 @@ window.applyBulkApi=async()=>{
 };
 
 // ── PRODUCTS ─────────────────────────────────────────────────────────
+// ── MULTI-PRODUCT MODE ──────────────────────────────────────────────
+let _multiRowSeq = 0;
+window.setProductFormMode = (mode) => {
+  const isMulti = mode === 'multi';
+  $('singleTitleBlock').style.display = isMulti ? 'none' : 'block';
+  $('multiRowsBlock').style.display = isMulti ? 'block' : 'none';
+  $('singleModeBtn').className = isMulti ? 'btn btn-sm btn-ghost' : 'btn btn-sm';
+  $('multiModeBtn').className = isMulti ? 'btn btn-sm' : 'btn btn-sm btn-ghost';
+  $('productServiceIdLabel').innerHTML = isMulti
+    ? 'Shared Service ID <span style="font-weight:400;text-transform:none;">(used if a row\'s own Service ID is blank)</span>'
+    : 'Service ID';
+  $('saveProductBtn').innerHTML = isMulti
+    ? '<i class="fas fa-save"></i> Save All Products'
+    : '<i class="fas fa-save"></i> Save Product';
+  if (isMulti && $('multiRowsList').children.length === 0) {
+    addMultiProductRow(); addMultiProductRow();
+  }
+};
+
+window.addMultiProductRow = (title = '', price = '', avgTime = '', serviceId = '') => {
+  const rowId = 'mrow_' + (_multiRowSeq++);
+  const row = document.createElement('div');
+  row.id = rowId;
+  row.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;';
+  row.innerHTML = `
+    <input type="text" class="mrow-title" placeholder="e.g., 100 Followers" value="${title.replace(/"/g,'&quot;')}" style="padding:10px 12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:12px;">
+    <input type="number" class="mrow-price" placeholder="Price ₹" value="${price}" style="padding:10px 12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:12px;">
+    <input type="text" class="mrow-avgtime" placeholder="Avg Time" value="${avgTime.replace(/"/g,'&quot;')}" style="padding:10px 12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:12px;">
+    <input type="text" class="mrow-serviceid" placeholder="Service ID (optional)" value="${serviceId.replace(/"/g,'&quot;')}" style="padding:10px 12px;background:var(--input-bg);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:12px;">
+    <button type="button" class="btn btn-sm btn-ghost" style="width:34px;height:34px;padding:0;color:var(--accent-danger);" onclick="document.getElementById('${rowId}').remove()"><i class="fas fa-trash"></i></button>
+  `;
+  $('multiRowsList').appendChild(row);
+};
+
 $('saveProductBtn').addEventListener('click',async()=>{
-  const title=$('productTitle').value.trim(),cat=$('productCategory').value,sub=$('productSubCategory').value,price=$('productDiscountPrice').value,avgTime=$('productAvgTime').value.trim();
-  const apiUrl=$('productApiUrl').value.trim(),apiKey=$('productApiKey').value.trim(),serviceId=$('productServiceId').value.trim();
+  const isMulti = $('multiRowsBlock').style.display !== 'none';
+  const cat=$('productCategory').value,sub=$('productSubCategory').value;
+  const apiUrl=$('productApiUrl').value.trim(),apiKey=$('productApiKey').value.trim(),sharedServiceId=$('productServiceId').value.trim();
   const linkLabel=$('productLinkLabel').value.trim();
   const description=$('productDescription').value.trim();
   const features=$('productFeatures').value.trim().split('\n').map(f=>f.trim()).filter(f=>f.length>0);
   const specification=$('productSpecification').value.trim();
+
+  if(isMulti){
+    const rows = Array.from($('multiRowsList').children);
+    const items = rows.map(row => ({
+      title: row.querySelector('.mrow-title').value.trim(),
+      price: row.querySelector('.mrow-price').value,
+      avgTime: row.querySelector('.mrow-avgtime').value.trim(),
+      serviceId: row.querySelector('.mrow-serviceid').value.trim(),
+    })).filter(r => r.title || r.price !== '');
+    if(!items.length) return showToast('⚠️ Add at least one row with a title and price');
+    const bad = items.find(r => !r.title || r.price === '');
+    if(bad) return showToast('⚠️ Every row needs a Title and Price');
+    let startOrder = parseInt($('multiStartOrder').value) || 0;
+    showLoading(`Saving ${items.length} products...`);
+    try{
+      for(const item of items){
+        const pData={
+          title:item.title, category:cat, subCategory:sub,
+          discountedPrice:item.price, avgTime:item.avgTime||'',
+          description:description||'', features, specification:specification||'',
+          apiUrl:apiUrl||'', apiKey:apiKey||'',
+          serviceId:(item.serviceId||sharedServiceId||''),
+          linkLabel:linkLabel||'',
+          displayOrder: startOrder || 0,
+          createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+        };
+        if(startOrder) startOrder++;
+        await push(ref(db,'products'), pData);
+      }
+      $('clearProductBtn').click();hideLoading();showToast(`✅ ${items.length} products saved!`);
+    }catch(e){hideLoading();showToast('❌ '+e.message);}
+    return;
+  }
+
+  const title=$('productTitle').value.trim(),price=$('productDiscountPrice').value,avgTime=$('productAvgTime').value.trim();
   const displayOrder=parseInt($('productDisplayOrder').value)||0;
   const editId=$('editProductId').value;
   if(!title || price === '') return showToast('⚠️ Title and price are required');
   showLoading();
-  const pData={title,category:cat,subCategory:sub,discountedPrice:price,avgTime:avgTime||'',description:description||'',features,specification:specification||'',apiUrl:apiUrl||'',apiKey:apiKey||'',serviceId:serviceId||'',linkLabel:linkLabel||'',displayOrder,updatedAt:new Date().toISOString()};
+  const pData={title,category:cat,subCategory:sub,discountedPrice:price,avgTime:avgTime||'',description:description||'',features,specification:specification||'',apiUrl:apiUrl||'',apiKey:apiKey||'',serviceId:sharedServiceId||'',linkLabel:linkLabel||'',displayOrder,updatedAt:new Date().toISOString()};
   try{
     if(editId){await update(ref(db,`products/${editId}`),pData);}
     else{pData.createdAt=new Date().toISOString();await push(ref(db,'products'),pData);}
@@ -1881,7 +1973,9 @@ $('saveProductBtn').addEventListener('click',async()=>{
 });
 
 $('clearProductBtn').addEventListener('click',()=>{
-  $('editProductId').value='';$('productFormTitle').textContent='Add Product';['productTitle','productDiscountPrice','productAvgTime','productApiUrl','productApiKey','productServiceId','productLinkLabel','productDescription','productFeatures','productSpecification','productDisplayOrder'].forEach(id=>$(id).value='');
+  $('editProductId').value='';$('productFormTitle').textContent='Add Product';['productTitle','productDiscountPrice','productAvgTime','productApiUrl','productApiKey','productServiceId','productLinkLabel','productDescription','productFeatures','productSpecification','productDisplayOrder','multiStartOrder'].forEach(id=>$(id).value='');
+  $('multiRowsList').innerHTML='';
+  window.setProductFormMode('single');
 });
 
 // ── CSV EXPORT — ALL EXISTING PRODUCTS FROM FIREBASE ─────────────────
@@ -2101,6 +2195,7 @@ window.applyInlineProductEdit=async(id)=>{
 window.filterProducts=()=>renderProducts(globalProducts);
 window.editProduct=(id)=>{
   const p=globalProducts[id];if(!p)return;
+  window.setProductFormMode('single');
   $('editProductId').value=id;$('productFormTitle').textContent='Edit Product';
   $('productTitle').value=p.title;$('productCategory').value=p.category;
   window.updateSubCategories();
