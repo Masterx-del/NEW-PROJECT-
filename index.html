@@ -3514,8 +3514,28 @@ window.deleteLinkRule = (key) => { delete linkMgmtData[key]; renderLinkMgmtRows(
 
 $('saveLinkMgmtBtn').addEventListener('click', async () => {
   showLoading();
-  await set(ref(db, 'meta/linkMgmt'), linkMgmtData);
-  hideLoading(); showToast('✅ Link rules saved!');
+  try{
+    const toSave = {...linkMgmtData};
+    console.log('[LinkMgmt] Saving rules:', toSave);
+    await set(ref(db, 'meta/linkMgmt'), toSave);
+    // Verify it actually landed on the server — re-read immediately after write.
+    const verifySnap = await get(ref(db, 'meta/linkMgmt'));
+    const verified = verifySnap.exists() ? verifySnap.val() : {};
+    console.log('[LinkMgmt] Verified after save (read back from server):', verified);
+    const savedKeys = Object.keys(toSave), verifiedKeys = Object.keys(verified);
+    const allMatch = savedKeys.length === verifiedKeys.length && savedKeys.every(k => verified[k] === toSave[k]);
+    hideLoading();
+    if(allMatch){
+      showToast('✅ Link rules saved & verified!');
+    } else {
+      console.error('[LinkMgmt] MISMATCH — what we tried to save does not match what server has.', {tried: toSave, actual: verified});
+      alert('⚠️ Save did not verify correctly. Sent: '+JSON.stringify(toSave)+'\n\nServer now has: '+JSON.stringify(verified)+'\n\nCheck Firebase rules for meta/linkMgmt write access, or screenshot this alert and share it.');
+    }
+  }catch(e){
+    hideLoading();
+    console.error('[LinkMgmt] Save FAILED:', e);
+    alert('❌ Save failed: '+e.message+'\n\nThis usually means Firebase rules are blocking writes to meta/linkMgmt. Check that meta/.write is not requiring auth (admin panel has no login anymore).');
+  }
 });
 
 onValue(ref(db, 'meta/linkMgmt'), s => {
