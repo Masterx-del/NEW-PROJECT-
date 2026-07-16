@@ -1505,7 +1505,14 @@ let allServicesCache=[];
 let serviceModalTarget=''; // 'product' | 'bulk'
 setTimeout(()=>isInitialLoad=false,3000);
 
-onChildAdded(ref(db,'orders'),(snap)=>{if(!isInitialLoad)showToast('🔔 New Order Placed!');});
+onChildAdded(ref(db,'orders'),(snap)=>{
+  if(!isInitialLoad){
+    showToast('🔔 New Order Placed!');
+    // Telegram notification is now sent directly from the checkout flow (User side) the instant
+    // the order is placed — this works live even when the admin panel is closed. Kept out here
+    // to avoid sending the same notification twice when the admin panel happens to be open.
+  }
+});
 onChildChanged(ref(db,'chats'),(snap)=>{if(!isInitialLoad){const info=snap.val()?.info;if(info)showToast(`💬 New Message: ${info.userName||'User'}`);}});
 
 // ── DRAWER ───────────────────────────────────────────────────────────
@@ -3718,6 +3725,39 @@ window._tgSend = async(chatId, text) => {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text,parse_mode:'HTML'})});
   }catch(e){}
 };
+
+// ── NEW ORDER TELEGRAM NOTIFICATION ────────────────────────────────────
+// Fires automatically whenever a new order lands in Firebase (see onChildAdded above).
+// Sends to the "Orders Channel" chat ID set in Telegram Bot tab.
+function tgEsc(str){
+  return String(str==null?'':str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+async function sendOrderTelegramNotification(orderId, o){
+  const chatId = $('tgChatId').value.trim();
+  if(!chatId || !o) return; // Orders channel not configured — skip silently
+  const orderNo = orderId.slice(-6).toUpperCase();
+  const productName = tgEsc(o.productSnapshot?.title || o.productSnapshot?.planName || 'N/A');
+  const qty = tgEsc(o.productSnapshot?.quantity || o.quantity || '—');
+  const amount = parseFloat(o.finalAmount||0);
+  const user = tgEsc(o.guestId || o.userEmail || 'N/A');
+  const link = tgEsc(o.targetLink || '—');
+  const utr = tgEsc(o.utrId || '—');
+  const isFree = amount<=0;
+  const status = isFree ? '🆓 Free Order' : (o.status==='progress' ? '⚙️ In Progress (Auto)' : '⏳ Pending Review');
+  const time = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+  const text = `🔔 <b>New Order Received!</b>
+
+🆔 Order ID: <code>#${orderNo}</code>
+🛍️ Product: ${productName}
+🔢 Quantity: ${qty}
+💰 Amount: ₹${amount}
+👤 User: <code>${user}</code>
+🔗 Link: ${link}
+🧾 UTR: <code>${utr}</code>
+📌 Status: ${status}
+🕒 Time: ${time}`;
+  window._tgSend(chatId, text);
+}
 
 // Test individual channel
 window.testTgBotChannel = async(type) => {
