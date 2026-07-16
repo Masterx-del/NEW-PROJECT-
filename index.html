@@ -3482,6 +3482,10 @@ $('lmNewCat').addEventListener('change', () => {
   });
 });
 
+function escAttr(str){
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function renderLinkMgmtRows() {
   const cont = $('linkMgmtRows');
   if (!cont) return;
@@ -3493,12 +3497,26 @@ function renderLinkMgmtRows() {
   cont.innerHTML = entries.map(([key, label]) => {
     const [cat, sub] = key.split('|');
     return `<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 12px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;">
-      <div style="font-size:11px;font-weight:600;color:var(--text-primary);">${cat} <span style="color:var(--text-secondary);">›</span> ${sub}</div>
-      <input type="text" value="${label}" onchange="linkMgmtData['${key}']=this.value" style="padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;background:var(--input-bg);color:var(--text-primary);font-size:11px;font-family:inherit;width:100%;">
-      <button class="btn btn-sm btn-danger" onclick="deleteLinkRule('${key}')" style="width:36px;min-height:36px;padding:0;flex-shrink:0;"><i class="fas fa-trash"></i></button>
+      <div style="font-size:11px;font-weight:600;color:var(--text-primary);">${escAttr(cat)} <span style="color:var(--text-secondary);">›</span> ${escAttr(sub)}</div>
+      <input type="text" class="lm-label-input" data-key="${escAttr(key)}" value="${escAttr(label)}" style="padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;background:var(--input-bg);color:var(--text-primary);font-size:11px;font-family:inherit;width:100%;">
+      <button class="btn btn-sm btn-danger lm-delete-btn" data-key="${escAttr(key)}" style="width:36px;min-height:36px;padding:0;flex-shrink:0;"><i class="fas fa-trash"></i></button>
     </div>`;
   }).join('');
 }
+
+// Event delegation — survives re-renders and any special characters (quotes, apostrophes) in labels/keys
+$('linkMgmtRows').addEventListener('change', (e) => {
+  if(e.target.classList.contains('lm-label-input')){
+    linkMgmtData[e.target.dataset.key] = e.target.value;
+  }
+});
+$('linkMgmtRows').addEventListener('click', (e) => {
+  const btn = e.target.closest('.lm-delete-btn');
+  if(btn){
+    delete linkMgmtData[btn.dataset.key];
+    renderLinkMgmtRows();
+  }
+});
 
 window.addLinkMgmtRow = () => {
   const cat = $('lmNewCat').value; const sub = $('lmNewSub').value; const label = $('lmNewLabel').value.trim();
