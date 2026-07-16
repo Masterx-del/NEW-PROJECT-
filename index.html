@@ -3523,9 +3523,11 @@ $('linkMgmtRows').addEventListener('click', (e) => {
 
 window.addLinkMgmtRow = () => {
   const cat = $('lmNewCat').value; const sub = $('lmNewSub').value; const label = $('lmNewLabel').value.trim();
-  if (!cat || !sub || !label) return showToast('⚠️ Select category, sub-category and enter a label');
+  console.log('[LinkMgmt] Add clicked — cat:', cat, 'sub:', sub, 'label:', label);
+  if (!cat || !sub || !label) { console.warn('[LinkMgmt] Add blocked — missing cat/sub/label'); return showToast('⚠️ Select category, sub-category and enter a label'); }
   linkMgmtData[`${cat}|${sub}`] = label;
   lmDirty = true;
+  console.log('[LinkMgmt] linkMgmtData after add:', JSON.stringify(linkMgmtData), 'lmDirty:', lmDirty);
   $('lmNewLabel').value = ''; $('lmNewCat').value = '';
   $('lmNewSub').innerHTML = '<option value="">-- Select --</option>';
   renderLinkMgmtRows();
@@ -3538,12 +3540,16 @@ $('saveLinkMgmtBtn').addEventListener('click', async () => {
   showLoading();
   try{
     const toSave = {...linkMgmtData};
-    console.log('[LinkMgmt] Saving rules:', toSave);
+    console.log('[LinkMgmt] SAVE CLICKED — current linkMgmtData:', JSON.stringify(toSave));
+    if(Object.keys(toSave).length === 0){
+      console.warn('[LinkMgmt] linkMgmtData is EMPTY at save time — nothing to save, or it was wiped before you clicked Save.');
+    }
     await set(ref(db, 'meta/linkMgmt'), toSave);
+    console.log('[LinkMgmt] set() completed without error.');
     // Verify it actually landed on the server — re-read immediately after write.
     const verifySnap = await get(ref(db, 'meta/linkMgmt'));
     const verified = verifySnap.exists() ? verifySnap.val() : {};
-    console.log('[LinkMgmt] Verified after save (read back from server):', verified);
+    console.log('[LinkMgmt] Verified after save (read back from server):', JSON.stringify(verified));
     const savedKeys = Object.keys(toSave), verifiedKeys = Object.keys(verified);
     const allMatch = savedKeys.length === verifiedKeys.length && savedKeys.every(k => verified[k] === toSave[k]);
     hideLoading();
@@ -3562,6 +3568,7 @@ $('saveLinkMgmtBtn').addEventListener('click', async () => {
 });
 
 onValue(ref(db, 'meta/linkMgmt'), s => {
+  console.log('[LinkMgmt] onValue fired — exists:', s.exists(), 'data:', JSON.stringify(s.val()), 'lmDirty:', lmDirty);
   if(lmDirty){
     console.log('[LinkMgmt] Skipping remote sync — unsaved local edits present. Save or they will be lost.');
     return;
