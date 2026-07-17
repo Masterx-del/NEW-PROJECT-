@@ -2581,12 +2581,13 @@ async function attemptApiCall(id, order){
       const payload=`key=${encodeURIComponent(apiKey)}&action=add&service=${encodeURIComponent(serviceId)}&link=${encodeURIComponent(order.targetLink)}&quantity=${encodeURIComponent(quantity)}`;
       const proxies=[
         {url:apiUrl,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
-        {url:`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
+        {url:`https://corsproxy.org/?${encodeURIComponent(apiUrl)}`,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
+        {url:`https://bitter-mode-4fa8wholesale-proxy.demos-orx.workers.dev/?url=${encodeURIComponent(apiUrl)}`,method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload},
         {url:`https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl+'?'+payload)}`,method:'GET',headers:{},body:null},
       ];
       let apiJson=null,rawText='',lastErr='No response';
       for(const req of proxies){try{const opts={method:req.method,headers:req.headers,cache:'no-store'};if(req.body)opts.body=req.body;const res=await fetch(req.url,opts);rawText=await res.text();const p=JSON.parse(rawText);if(p&&typeof p==='object'&&!Array.isArray(p)){apiJson=p;break;}}catch(e){lastErr=e.message||'fetch failed';}}
-      if(apiJson){const oid=apiJson.order??apiJson.order_id??apiJson.id??null;const hasErr=apiJson.error||apiJson.status==='error';if(!hasErr){await update(ref(db,`orders/${id}`),{apiOrderId:oid?String(oid):'placed',apiStatus:'placed',apiRawResponse:rawText.substring(0,500)});showToast('🤖 API order placed!'+(oid?' ID: '+oid:''));}else{await update(ref(db,`orders/${id}`),{apiStatus:'error',apiRawResponse:rawText.substring(0,500)});showToast('⚠️ API error: '+(apiJson.error||apiJson.message||'Check API response'));}}
+      if(apiJson){const oid=apiJson.order??apiJson.order_id??apiJson.id??null;const hasErr=apiJson.error||apiJson.status==='error';if(!hasErr){const successUpd={apiOrderId:oid?String(oid):'placed',apiStatus:'placed',apiRawResponse:rawText.substring(0,500)};if(order.status!=='progress'||!order.autoCompleteAt){successUpd.status='progress';successUpd.progressAt=new Date().toISOString();const avgMs=parseAvgTimeToMs(snap.avgTime);if(avgMs)successUpd.autoCompleteAt=new Date(Date.now()+avgMs+10*60*1000).toISOString();}await update(ref(db,`orders/${id}`),successUpd);showToast('🤖 API order placed!'+(oid?' ID: '+oid:''));}else{await update(ref(db,`orders/${id}`),{apiStatus:'error',apiRawResponse:rawText.substring(0,500)});showToast('⚠️ API error: '+(apiJson.error||apiJson.message||'Check API response'));}}
       else{await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'All proxies failed: '+(rawText||lastErr).substring(0,400)});showToast('⚠️ API did not respond. Order in progress (manual).');}
     }catch(apiErr){await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'Exception: '+apiErr.message}).catch(()=>{});showToast('⚠️ API failed: '+apiErr.message);}
   } else {
