@@ -2343,11 +2343,22 @@ window.saveEstTime=async(id)=>{
         if(o.status==='pending'&&o.apiStatus==='skipped'){
           updates[`orders/${id}/status`]='pending_verification';
         }
+        // Self-heal: order's API call started ('calling'/'processing') but never resolved —
+        // usually the customer closed the tab right after paying, so the browser never got
+        // to write the final apiStatus back. After 3 min with no resolution, unstick it so
+        // the "Retry API" button appears and admin can check the panel / retry manually.
+        if(o.status==='pending'&&(o.apiStatus==='calling'||o.apiStatus==='processing')){
+          const startedAt=o.apiAttemptStartedAt?new Date(o.apiAttemptStartedAt).getTime():(o.createdAt?new Date(o.createdAt).getTime():null);
+          if(startedAt&&(now-startedAt)>3*60*1000){
+            updates[`orders/${id}/apiStatus`]='failed';
+            updates[`orders/${id}/apiRawResponse`]='No response received (tab likely closed before confirmation) — please verify on the SMM panel before retrying.';
+          }
+        }
       });
       if(Object.keys(updates).length>0){
         await update(ref(db),updates);
         const count=Object.keys(updates).filter(k=>k.includes('/status')).length;
-        if(count>0)showToast(`✅ ${count} order(s) auto-completed`);
+        if(count>0)showToast(`✅ ${count} order(s) auto-updated`);
       }
     }catch(e){}
   }
