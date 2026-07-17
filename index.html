@@ -123,6 +123,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background-color:
 .order-card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:11px; box-shadow:var(--shadow); transition:var(--transition); }
 .order-card:hover { box-shadow:0 6px 14px rgba(0,0,0,0.06); }
 .order-card.border-pending { border-left:4px solid var(--accent-warn); }
+.order-card.border-pending_verification { border-left:4px solid #6366f1; }
 .order-card.border-progress { border-left:4px solid var(--accent-primary); }
 .order-card.border-completed { border-left:4px solid var(--accent-success); }
 .order-card.border-rejected { border-left:4px solid var(--accent-danger); }
@@ -133,6 +134,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background-color:
 /* STATUS BADGES */
 .badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.3px; display:inline-flex; align-items:center; gap:4px; }
 .badge-pending { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.3); }
+.badge-pending_verification { background:rgba(99,102,241,0.12); color:#4f46e5; border:1px solid rgba(99,102,241,0.3); }
 .badge-progress { background:rgba(37,99,235,0.1); color:#2563eb; border:1px solid rgba(37,99,235,0.25); }
 .badge-completed { background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.25); }
 .badge-rejected { background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.25); }
@@ -743,6 +745,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <option value="paid">💰 Paid Orders</option>
     <option value="free">🆓 Free Orders</option>
     <option value="pending">⏳ Pending</option>
+    <option value="pending_verification">🔍 Pending Verification</option>
     <option value="progress">⚙️ In Progress</option>
     <option value="completed">✅ Completed</option>
     <option value="rejected">❌ Rejected</option>
@@ -763,6 +766,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   <span id="bulkCountLabel" style="font-size:11px;font-weight:600;flex:1;">0 selected</span>
   <select id="bulkStatusSelect" style="padding:8px 10px;border-radius:6px;border:none;font-size:11px;font-family:inherit;">
     <option value="pending">⏳ Pending</option>
+    <option value="pending_verification">🔍 Pending Verification</option>
     <option value="progress">⚙️ In Progress</option>
     <option value="completed">✅ Completed</option>
     <option value="rejected">❌ Rejected</option>
@@ -2324,6 +2328,21 @@ window.saveEstTime=async(id)=>{
             }
           }
         }
+        // Self-heal: SMM provider confirmed the order (apiStatus 'placed') but status
+        // never flipped to 'progress' (e.g. order placed before this fix, or a race).
+        if(o.status==='pending'&&o.apiStatus==='placed'){
+          updates[`orders/${id}/status`]='progress';
+          if(!o.progressAt)updates[`orders/${id}/progressAt`]=new Date().toISOString();
+          if(!o.autoCompleteAt){
+            const avgMs=parseAvgTimeToMs(o.productSnapshot?.avgTime);
+            if(avgMs)updates[`orders/${id}/autoCompleteAt`]=new Date(Date.now()+avgMs+10*60*1000).toISOString();
+          }
+        }
+        // Self-heal: API config (quantity/URL/key/service) was missing — flag for manual review
+        // instead of sitting in the normal pending queue.
+        if(o.status==='pending'&&o.apiStatus==='skipped'){
+          updates[`orders/${id}/status`]='pending_verification';
+        }
       });
       if(Object.keys(updates).length>0){
         await update(ref(db),updates);
@@ -2370,7 +2389,7 @@ function buildOrderCardHTML(id, o) {
   const productName=o.productSnapshot?.title||o.productSnapshot?.planName||'N/A';
   const isFreeOrder=price<=0;
   const freeBadge=isFreeOrder?`<span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;border:1px solid rgba(16,185,129,0.3);margin-left:4px;">🆓 FREE</span>`:'';
-  const statusBadge={pending:`<span class="badge badge-pending">⏳ Pending</span>`,progress:`<span class="badge badge-progress">⚙️ In Progress</span>`,completed:`<span class="badge badge-completed">✅ Completed</span>`,rejected:`<span class="badge badge-rejected">❌ Rejected</span>`}[status]||'';
+  const statusBadge={pending:`<span class="badge badge-pending">⏳ Pending</span>`,pending_verification:`<span class="badge badge-pending_verification">🔍 Pending Verification</span>`,progress:`<span class="badge badge-progress">⚙️ In Progress</span>`,completed:`<span class="badge badge-completed">✅ Completed</span>`,rejected:`<span class="badge badge-rejected">❌ Rejected</span>`}[status]||'';
   return `<div class="order-card border-${status}">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
   <div style="display:flex;align-items:center;gap:8px;">
@@ -2403,13 +2422,14 @@ function buildOrderCardHTML(id, o) {
   ${o.apiStatus==='calling'?`<div style="grid-column:1/-1"><span class="order-field" style="color:#f59e0b;"><i class="fas fa-spinner fa-spin"></i> API Status</span><span class="order-value" style="color:#f59e0b;">Calling provider... (refresh in a few sec)</span></div>`:''}
 </div>
 <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;">
-  ${status==='pending'?`<button class="btn btn-sm btn-success" onclick="updateStatus('${id}','progress')" style="flex:1;"><i class="fas fa-play"></i> Accept</button>`:''}
+  ${(status==='pending'||status==='pending_verification')?`<button class="btn btn-sm btn-success" onclick="updateStatus('${id}','progress')" style="flex:1;"><i class="fas fa-play"></i> Accept</button>`:''}
   ${status==='progress'?`<button class="btn btn-sm btn-success" onclick="updateStatus('${id}','completed')" style="flex:1;"><i class="fas fa-check"></i> Complete</button>`:''}
-  ${(status==='pending'||status==='progress')?`<button class="btn btn-sm btn-danger" onclick="confirmReject('${id}')" style="flex:1;"><i class="fas fa-times"></i> Reject</button>`:''}
+  ${(status==='pending'||status==='pending_verification'||status==='progress')?`<button class="btn btn-sm btn-danger" onclick="confirmReject('${id}')" style="flex:1;"><i class="fas fa-times"></i> Reject</button>`:''}
   ${(!o.apiOrderId&&['error','failed','skipped'].includes(o.apiStatus))?`<button class="btn btn-sm" style="flex:1;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" onclick="retryApiCall('${id}')"><i class="fas fa-rotate"></i> Retry API</button>`:''}
   <select style="padding:10px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-primary);font-size:11px;flex:1;min-width:120px;font-family:inherit;" onchange="confirmStatusChange('${id}',this.value,'${status}',this)">
     <option value="" disabled selected style="display:none;">⚡ Change Status</option>
     <option value="pending">⏳ Pending</option>
+    <option value="pending_verification">🔍 Pending Verification</option>
     <option value="progress">⚙️ In Progress</option>
     <option value="completed">✅ Completed</option>
     <option value="rejected">❌ Rejected</option>
@@ -2591,7 +2611,7 @@ async function attemptApiCall(id, order){
       else{await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'All proxies failed: '+(rawText||lastErr).substring(0,400)});showToast('⚠️ API did not respond. Order in progress (manual).');}
     }catch(apiErr){await update(ref(db,`orders/${id}`),{apiStatus:'failed',apiRawResponse:'Exception: '+apiErr.message}).catch(()=>{});showToast('⚠️ API failed: '+apiErr.message);}
   } else {
-    await update(ref(db,`orders/${id}`),{apiStatus:'skipped',apiRawResponse:`Missing config: url=${!!apiUrl} key=${!!apiKey} svc=${!!serviceId} qty=${!!quantity} link=${!!order.targetLink}`}).catch(()=>{});
+    await update(ref(db,`orders/${id}`),{apiStatus:'skipped',status:'pending_verification',apiRawResponse:`Missing config: url=${!!apiUrl} key=${!!apiKey} svc=${!!serviceId} qty=${!!quantity} link=${!!order.targetLink}`}).catch(()=>{});
     showToast('⚠️ API config incomplete — check API URL/Key/Service ID/Quantity/Link');
   }
 }
