@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1227,34 +1226,14 @@
                 </a>
             </div>
 
-            <h2 class="section-title">Select Service</h2>
-            <!-- Skeleton shown while products load -->
-            <div class="skeleton-grid" id="serviceGridSkeleton">
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-            </div>
-            <div class="services-grid" id="servicesGridReal" style="display:none;">
-                <div class="service-cat-card" onclick="openCategory('Instagram')"><i class="fab fa-instagram" style="color: #E1306C;"></i><div class="service-cat-name">Instagram</div><button class="service-cat-select-btn" onclick="openCategory('Instagram')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('Facebook')"><i class="fab fa-facebook" style="color: #1877F2;"></i><div class="service-cat-name">Facebook</div><button class="service-cat-select-btn" onclick="openCategory('Facebook')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('Telegram')"><i class="fab fa-telegram" style="color: #0088cc;"></i><div class="service-cat-name">Telegram</div><button class="service-cat-select-btn" onclick="openCategory('Telegram')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('WhatsApp')"><i class="fab fa-whatsapp" style="color: #25D366;"></i><div class="service-cat-name">WhatsApp</div><button class="service-cat-select-btn" onclick="openCategory('WhatsApp')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('YouTube')"><i class="fab fa-youtube" style="color: #FF0000;"></i><div class="service-cat-name">YouTube</div><button class="service-cat-select-btn" onclick="openCategory('YouTube')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('TikTok')"><i class="fab fa-tiktok" style="color: #010101;"></i><div class="service-cat-name">TikTok</div><button class="service-cat-select-btn" onclick="openCategory('TikTok')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('Twitter')"><i class="fab fa-twitter" style="color: #1DA1F2;"></i><div class="service-cat-name">Twitter</div><button class="service-cat-select-btn" onclick="openCategory('Twitter')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('Accounts')"><i class="fas fa-address-card" style="color: #6366F1;"></i><div class="service-cat-name">Accounts</div><button class="service-cat-select-btn" onclick="openCategory('Accounts')">Select</button></div>
-                <div class="service-cat-card" onclick="openCategory('Scripts')"><i class="fas fa-laptop-code" style="color: #2563EB;"></i><div class="service-cat-name">Scripts</div><button class="service-cat-select-btn" onclick="openCategory('Scripts')">Select</button></div>
-            </div>
-
-            <div id="categoryPane" style="display: none; padding-top: 24px; border-top: 1px solid var(--border-color); margin-top: 20px; padding-bottom: 20px;">
-                <div style="margin-bottom: 20px;"><h2 class="section-title" id="catTitle" style="margin:0;">Category Name</h2></div>
-                <div id="catProductsList"></div>
+            <div id="categoryPane" style="display: block; padding-bottom: 20px;">
+                <div style="margin-bottom: 16px;"><h2 class="section-title" id="catTitle" style="margin:0;"><i class="fab fa-instagram" style="color:#E1306C;"></i> Instagram Services</h2></div>
+                <div id="catProductsList">
+                    <div style="padding:8px 0;">
+                        <div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:55%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>
+                        <div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:45%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -1612,18 +1591,13 @@
                 <img id="sfLogo" class="sf-logo" alt="">
                 <div id="sfName" class="sf-name">Wholesale Provider</div>
             </div>
-            <p class="sf-tagline">Social media growth services, accounts and scripts, ordered and tracked from one dashboard.</p>
+            <p class="sf-tagline">Instagram growth services, ordered and tracked from one dashboard.</p>
 
             <nav class="sf-cols" aria-label="Footer">
                 <div class="sf-col">
                     <div class="sf-col-title">Popular Services</div>
                     <ul class="sf-links">
-                        <li><button type="button" class="sf-link" data-service="Instagram"><i class="fab fa-instagram"></i>Instagram</button></li>
-                        <li><button type="button" class="sf-link" data-service="YouTube"><i class="fab fa-youtube"></i>YouTube</button></li>
-                        <li><button type="button" class="sf-link" data-service="Facebook"><i class="fab fa-facebook"></i>Facebook</button></li>
-                        <li><button type="button" class="sf-link" data-service="TikTok"><i class="fab fa-tiktok"></i>TikTok</button></li>
-                        <li><button type="button" class="sf-link" data-service="Telegram"><i class="fab fa-telegram"></i>Telegram</button></li>
-                        <li><button type="button" class="sf-link" data-service="WhatsApp"><i class="fab fa-whatsapp"></i>WhatsApp</button></li>
+                        <li><button type="button" class="sf-link" data-service="Instagram"><i class="fab fa-instagram"></i>Instagram Services</button></li>
                     </ul>
                 </div>
                 <div class="sf-col">
@@ -2883,13 +2857,13 @@
     import { getDatabase, ref, get, set, push, onValue, query, orderByChild, equalTo, update, onChildChanged, runTransaction, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
     const firebaseConfig = {
-        apiKey: "AIzaSyDrjP8o8adBYGih_28XrDrCwVpL3WRu9rE",
-        authDomain: "selll-d5149.firebaseapp.com",
-        databaseURL: "https://selll-d5149-default-rtdb.firebaseio.com",
-        projectId: "selll-d5149",
-        storageBucket: "selll-d5149.firebasestorage.app",
-        messagingSenderId: "633734276998",
-        appId: "1:633734276998:web:b486015bd345028a406e07"
+        apiKey: "AIzaSyAq1qga42cDPUNbeU6kbED9C2QJW0xfh9o",
+        authDomain: "wholesale-provider.firebaseapp.com",
+        databaseURL: "https://wholesale-provider-default-rtdb.firebaseio.com",
+        projectId: "wholesale-provider",
+        storageBucket: "wholesale-provider.firebasestorage.app",
+        messagingSenderId: "13623945257",
+        appId: "1:13623945257:web:eff5a5a38360df7d2e9438"
     };
     const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getDatabase(app);
 
@@ -4013,7 +3987,7 @@
         }
         tabContents.forEach(tc => tc.classList.remove('active'));
         document.getElementById(targetId).classList.add('active');
-        if (targetId !== 'homeTab') { document.getElementById('categoryPane').style.display = 'none'; currentCatView.level = 0; }
+        if (targetId !== 'homeTab') { currentCatView.level = 0; } else if (typeof _productsLoaded !== 'undefined' && _productsLoaded && currentCatView.level === 0) { window.openCategory('Instagram', true); }
         navItems.forEach(nav => { nav.classList.toggle('active', nav.dataset.target === targetId); });
         document.querySelector('.content-area').scrollTo(0,0);
         // Reset userUnread badge when chat tab opened + scroll to latest message
@@ -4030,13 +4004,15 @@
     navItems.forEach(nav => { nav.addEventListener('click', () => switchTab(nav.dataset.target)); });
     document.getElementById('headerProfileBtn').addEventListener('click', () => switchTab('profileTab'));
 
-    window.openCategory = (catName) => { 
+    // Store is Instagram-only: every category view resolves to Instagram.
+    window.openCategory = (catName, silent) => { 
+        catName = 'Instagram';
         currentCatView = { level: 1, cat: catName, subCat: '' };
         const catTitle = document.getElementById('catTitle');
-        catTitle.innerHTML = `<i class="fas fa-layer-group" style="color:var(--accent-cyan);"></i> ${catName}`;
+        catTitle.innerHTML = `<i class="fab fa-instagram" style="color:#E1306C;"></i> Instagram Services`;
         const list = document.getElementById('catProductsList');
         const pane = document.getElementById('categoryPane'); pane.style.display = 'block';
-        setTimeout(() => { const contentArea = document.querySelector('.content-area'); const targetPos = Math.max(0, pane.offsetTop - 40); contentArea.scrollTo({ top: targetPos, behavior: 'smooth' }); }, 50);
+        if (!silent) setTimeout(() => { const contentArea = document.querySelector('.content-area'); const targetPos = Math.max(0, pane.offsetTop - 40); contentArea.scrollTo({ top: targetPos, behavior: 'smooth' }); }, 50);
         // Show skeleton while data loads on slow network
         if (!_productsLoaded) {
             list.innerHTML = `<div style="padding:8px 0;">${[1,2,3].map(()=>`<div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:55%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>`).join('')}</div>`;
@@ -6562,7 +6538,7 @@
     };
     window._defaultCategoryIcon = {icon:'fas fa-star', color:'#64748b'};
     // Fallback order used only if admin has never saved a category map to Firebase yet
-    window._fallbackCategoryOrder = ['Instagram','Facebook','Telegram','WhatsApp','YouTube','TikTok','Twitter','Accounts','Scripts'];
+    window._fallbackCategoryOrder = ['Instagram'];
 
     window._categoryIconHTML = (cat) => {
         const cfg = window._categoryIconMap[cat] || window._defaultCategoryIcon;
@@ -6809,19 +6785,14 @@
         onValue(ref(activeDb(), 'meta/linkMgmt'), s => { linkMgmtRules = s.exists() ? s.val() : {}; });
         let _firstProductLoad = true;
         onValue(ref(activeDb(), 'products'), s => {
-            productsData = s.exists() ? s.val() : {};
+            // Instagram-only store: drop every non-Instagram service before anything else sees it
+            productsData = {};
+            if (s.exists()) Object.entries(s.val()).forEach(([pid, p]) => { if (p && String(p.category || '').trim().toLowerCase() === 'instagram') productsData[pid] = p; });
             _productsLoaded = true;
             pgwTryRestoreAfterAuth();
             renderOfferCarousel(true);
-            // ── Reveal real service grid, hide skeleton ──
-            const skeleton = document.getElementById('serviceGridSkeleton');
-            const realGrid = document.getElementById('servicesGridReal');
-            if (skeleton) skeleton.style.display = 'none';
-            if (realGrid) realGrid.style.display = 'grid';
-            if(document.getElementById('categoryPane').style.display === 'block') {
-                if(currentCatView.level === 1) { openCategory(currentCatView.cat); }
-                else if(currentCatView.level === 2) { openSubCategory(currentCatView.cat, currentCatView.subCat); }
-            }
+            if (currentCatView.level === 2) { openSubCategory(currentCatView.cat, currentCatView.subCat); }
+            else if (document.getElementById('homeTab').classList.contains('active')) { openCategory('Instagram', true); }
             if(_firstProductLoad) { _firstProductLoad = false; }
         });
         onValue(ref(activeDb(), 'exclusivePacks'), s => { 
