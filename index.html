@@ -147,15 +147,8 @@
         .offer-track.dragging { transition: none !important; cursor: grabbing; }
         .offer-slide { flex: 0 0 100%; width: 100%; min-width: 0; position: relative; }
         .offer-nav-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            width: 28px; height: 28px; border-radius: 50%;
-            background: rgba(255,255,255,0.92); border: 1.5px solid #2563eb; color: #2563eb;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            font-size: 11px; z-index: 5; box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0;
-            transition: background 0.2s, color 0.2s;
+            display: none !important; /* arrows hidden — autoplay + manual swipe still work */
         }
-        .offer-nav-btn:hover { background: #2563eb; color: #fff; }
-        .offer-nav-btn:active { transform: translateY(-50%) scale(0.92); }
         .offer-nav-prev { left: 8px; }
         .offer-nav-next { right: 8px; }
         .offer-carousel.single-slide .offer-nav-btn,
@@ -169,6 +162,13 @@
             background: rgba(37,99,235,0.3); cursor: pointer; transition: all 0.2s ease;
         }
         .offer-dot.active { background: #2563eb; width: 16px; border-radius: 4px; }
+        .offer-carousel-slides { position: relative; }
+        .offer-buy-strip {
+            display: none; width: 100%; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px 0; font-size: 13px; font-weight: 800; letter-spacing: 0.2px;
+            background: #1d4ed8; color: #fff; border: none; cursor: pointer;
+        }
+        .offer-buy-strip.visible { display: flex; }
         @media (prefers-reduced-motion: reduce) {
             .offer-track { transition: none !important; }
         }
@@ -192,13 +192,49 @@
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 10px; }
         .service-cat-card { 
             background: var(--card-solid); border: 1px solid var(--border-color); 
-            border-radius: var(--border-radius); padding: 16px 8px; text-align: center; 
+            border-radius: var(--border-radius); padding: 14px 6px 0; text-align: center; 
             box-shadow: var(--shadow); cursor: pointer; transition: var(--transition); 
+            overflow: hidden; display: flex; flex-direction: column;
         }
         .service-cat-card:hover { border-color: var(--accent-cyan); background: var(--bg-color); }
         .service-cat-card:active { transform: scale(0.97); }
-        .service-cat-card i { font-size: 22px; margin-bottom: 10px; opacity: 0.9; }
-        .service-cat-name { font-size: 11px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px; }
+        .service-cat-card i { font-size: 20px; margin-bottom: 6px; opacity: 0.9; }
+        .service-cat-name { font-size: 10.5px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.2px; margin-bottom: 10px; }
+        .service-cat-select-btn {
+            display: flex; align-items: center; justify-content: center; gap: 3px;
+            width: calc(100% + 14px); padding: 6px 2px; border: none;
+            border-radius: 0 0 11px 11px; background: #475569; color: #fff; font-size: 9.5px; font-weight: 700;
+            cursor: pointer; transition: var(--transition); font-family: inherit;
+            margin: auto -7px -1px;
+        }
+        .service-cat-select-btn:hover { background: #334155; }
+        .service-cat-select-btn:active { transform: scale(0.96); }
+
+        /* ── HOW IT WORKS SECTION (reuses existing design system) ── */
+        .hiw-section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border-color); }
+        .hiw-subtitle { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: -6px 0 20px; }
+        .hiw-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 4px; }
+        .hiw-card {
+            background: var(--card-solid); border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow);
+            display: flex; gap: 14px; align-items: flex-start;
+            transition: var(--transition), transform 0.2s;
+        }
+        .hiw-card:hover { border-color: var(--accent-cyan); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.08); }
+        .hiw-icon-wrap {
+            width: 44px; height: 44px; border-radius: 10px; background: rgba(37,99,235,0.1);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .hiw-icon-wrap i { font-size: 18px; color: var(--accent-cyan); }
+        .hiw-body { flex: 1; min-width: 0; }
+        .hiw-num { font-size: 11px; font-weight: 800; color: var(--accent-cyan); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .hiw-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.2px; }
+        .hiw-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+        @media (max-width: 480px) {
+            .hiw-card { padding: 16px; gap: 12px; }
+            .hiw-icon-wrap { width: 40px; height: 40px; }
+            .hiw-icon-wrap i { font-size: 16px; }
+        }
 
         .subcategory-card { 
             background: var(--card-solid); border: 1px solid var(--border-color); 
@@ -437,6 +473,25 @@
             border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; gap: 16px; align-items: center; 
         }
         .checkout-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; display: none; border: 1px solid var(--border-color); }
+        /* Checkout summary card (icon + title on top, price + quantity stepper at the bottom) — input-field background, blue border */
+        .checkout-summary.chk-card { flex-direction: column; align-items: stretch; gap: 20px; padding: 20px; background: var(--input-bg); border: 1.5px solid var(--accent-cyan); border-radius: 22px; box-shadow: none; }
+        .chk-card-top { display: flex; align-items: center; gap: 16px; }
+        .chk-card-icon { position: relative; width: 60px; height: 60px; border-radius: 16px; background: rgba(37, 99, 235, 0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+        .chk-card-icon i { font-size: 30px; color: var(--accent-cyan); }
+        .chk-card-icon .checkout-img { position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: 0; }
+        .chk-card-info { flex: 1; min-width: 0; }
+        .chk-card-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 2px; }
+        .chk-card-title { font-size: 20px; font-weight: 800; line-height: 1.2; color: var(--text-primary); word-break: break-word; }
+        .chk-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .chk-card-price { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+        .chk-card-price-amt { font-size: 26px; font-weight: 800; color: var(--text-primary); }
+        .chk-card-price-note { font-size: 13px; color: var(--text-secondary); }
+        /* Quantity stepper */
+        .qty-stepper { display: flex; align-items: center; gap: 4px; padding: 5px; background: rgba(37, 99, 235, 0.08); border-radius: 16px; flex-shrink: 0; margin-left: auto; }
+        .qty-stepper button { width: 40px; height: 40px; border: none; border-radius: 12px; background: rgba(37, 99, 235, 0.14); color: var(--accent-cyan); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: transform 0.1s, background 0.15s; }
+        .qty-stepper button:active:not(:disabled) { transform: scale(0.94); background: rgba(37, 99, 235, 0.26); }
+        .qty-stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .qty-stepper span { min-width: 44px; text-align: center; font-weight: 800; font-size: 20px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
         .coupon-box { display: flex; gap: 10px; margin-bottom: 8px; }
         .coupon-box input { 
@@ -1032,6 +1087,90 @@
         .osm-btn-home:hover { border-color: #2563eb; color: #2563eb; }
         .osm-btn-orders { background: #2563eb; color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
         .osm-btn-orders:hover { background: #1d4ed8; }
+
+        /* ══════════════════════════════════════════════════════════════
+           SITE FOOTER — shared footer, rendered once at the end of the
+           scrollable content area so it follows every tab/page.
+           Uses only the existing theme tokens (light + dark mode).
+           ══════════════════════════════════════════════════════════════ */
+        .site-footer {
+            position: relative; overflow: hidden;
+            margin: 36px -20px 0;                 /* bleed to the edges of .content-area's 20px padding */
+            padding: 28px 20px;
+            border-top: 1px solid var(--border-color);
+            background:
+                radial-gradient(circle at 100% 0%, rgba(37,99,235,0.08) 0%, transparent 55%),
+                radial-gradient(circle at 0% 100%, rgba(37,99,235,0.05) 0%, transparent 50%),
+                var(--bg-color);
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        .site-footer::before {                    /* faint accent line on the top border */
+            content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0.45; pointer-events: none;
+        }
+
+        .sf-brand { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+        .sf-logo {
+            width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+            border: 1px solid var(--border-color); box-shadow: var(--shadow); display: none;
+        }
+        .sf-logo.visible { display: block; }
+        .sf-name { font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; min-width: 0; overflow-wrap: anywhere; }
+        .sf-tagline { font-size: 12.5px; line-height: 1.6; color: var(--text-secondary); margin: 12px auto 0; max-width: 36ch; }
+
+        .sf-cols {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 20px;
+            margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--border-color);
+        }
+        .sf-col-title { font-size: 11px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-primary); margin-bottom: 8px; }
+        .sf-links { list-style: none; display: flex; flex-direction: column; align-items: center; }
+        .sf-link {
+            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 8px 0;
+            background: none; border: none; font-family: inherit; text-align: center; text-decoration: none;
+            font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--text-secondary);
+            cursor: pointer; transition: color 0.2s;
+        }
+        .sf-link i { width: 14px; flex-shrink: 0; text-align: center; font-size: 12px; opacity: 0.85; }
+        .sf-link:hover { color: var(--accent-cyan); }
+        .sf-link:hover i { opacity: 1; }
+
+        /* Popular Services & Company columns keep their original left-aligned layout */
+        .sf-cols .sf-col:not(.sf-legal) { text-align: left; }
+        .sf-cols .sf-col:not(.sf-legal) .sf-links { align-items: flex-start; }
+        .sf-cols .sf-col:not(.sf-legal) .sf-link { justify-content: flex-start; text-align: left; }
+
+        .sf-legal { grid-column: 1 / -1; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .sf-legal .sf-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0 22px; }
+        .sf-legal .sf-link { width: auto; }
+
+        .sf-trust { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .sf-trust-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 14px; }
+        .sf-badge {
+            display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+            padding: 7px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; line-height: 1.2;
+            background: var(--card-solid); border: 1px solid var(--border-color);
+            color: var(--text-primary); box-shadow: var(--shadow);
+        }
+        .sf-badge i { color: var(--accent-cyan); font-size: 12px; flex-shrink: 0; }
+        .sf-copy { margin: 16px auto 0; font-size: 11px; color: var(--text-secondary); line-height: 1.5; text-align: center; }
+
+        .site-footer .sf-link:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; border-radius: 8px; }
+
+        #chatTab.active ~ .site-footer { display: none; }   /* footer fully hidden on Support tab */
+
+        /* Home tab: show only the trust badges + copyright line, not the full footer */
+        #homeTab.active ~ .site-footer { padding-top: 20px; }
+        #homeTab.active ~ .site-footer .sf-brand,
+        #homeTab.active ~ .site-footer .sf-tagline,
+        #homeTab.active ~ .site-footer .sf-cols { display: none; }
+        #homeTab.active ~ .site-footer .sf-trust { margin-top: 0; padding-top: 0; border-top: none; }
+
+        @media (max-width: 300px) { .sf-cols { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) {
+            .sf-link { transition: none; }
+        }
     </style>
 </head>
 <body class="light-mode">
@@ -1065,12 +1204,15 @@
 
         <div id="homeTab" class="tab-content active">
             <div id="offerCarousel" class="offer-banner offer-carousel" role="region" aria-roledescription="carousel" aria-label="Special offers">
-                <div class="offer-track-viewport" id="offerTrackViewport">
-                    <div class="offer-track" id="offerTrack"></div>
+                <div class="offer-carousel-slides">
+                    <div class="offer-track-viewport" id="offerTrackViewport">
+                        <div class="offer-track" id="offerTrack"></div>
+                    </div>
+                    <button type="button" class="offer-nav-btn offer-nav-prev" id="offerPrevBtn" aria-label="Previous offer"><i class="fas fa-chevron-left"></i></button>
+                    <button type="button" class="offer-nav-btn offer-nav-next" id="offerNextBtn" aria-label="Next offer"><i class="fas fa-chevron-right"></i></button>
+                    <div class="offer-dots" id="offerDots"></div>
                 </div>
-                <button type="button" class="offer-nav-btn offer-nav-prev" id="offerPrevBtn" aria-label="Previous offer"><i class="fas fa-chevron-left"></i></button>
-                <button type="button" class="offer-nav-btn offer-nav-next" id="offerNextBtn" aria-label="Next offer"><i class="fas fa-chevron-right"></i></button>
-                <div class="offer-dots" id="offerDots"></div>
+                <button type="button" class="offer-buy-strip" id="offerBuyStrip" onclick="offerBuyStripClick()"><i class="fas fa-bolt"></i>&nbsp;Buy Now</button>
             </div>
 
             <div class="action-cards-stack">
@@ -1084,35 +1226,16 @@
                 </a>
             </div>
 
-            <h2 class="section-title">Select Service</h2>
-            <!-- Skeleton shown while products load -->
-            <div class="skeleton-grid" id="serviceGridSkeleton">
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-                <div class="skeleton-cat-card"><div class="skeleton skeleton-cat-icon"></div><div class="skeleton skeleton-cat-text"></div></div>
-            </div>
-            <div class="services-grid" id="servicesGridReal" style="display:none;">
-                <div class="service-cat-card" onclick="openCategory('Instagram')"><i class="fab fa-instagram" style="color: #E1306C;"></i><div class="service-cat-name">Instagram</div></div>
-                <div class="service-cat-card" onclick="openCategory('Facebook')"><i class="fab fa-facebook" style="color: #1877F2;"></i><div class="service-cat-name">Facebook</div></div>
-                <div class="service-cat-card" onclick="openCategory('Telegram')"><i class="fab fa-telegram" style="color: #0088cc;"></i><div class="service-cat-name">Telegram</div></div>
-                <div class="service-cat-card" onclick="openCategory('WhatsApp')"><i class="fab fa-whatsapp" style="color: #25D366;"></i><div class="service-cat-name">WhatsApp</div></div>
-                <div class="service-cat-card" onclick="openCategory('YouTube')"><i class="fab fa-youtube" style="color: #FF0000;"></i><div class="service-cat-name">YouTube</div></div>
-                <div class="service-cat-card" onclick="openCategory('TikTok')"><i class="fab fa-tiktok" style="color: #010101;"></i><div class="service-cat-name">TikTok</div></div>
-                <div class="service-cat-card" onclick="openCategory('Twitter')"><i class="fab fa-twitter" style="color: #1DA1F2;"></i><div class="service-cat-name">Twitter</div></div>
-                <div class="service-cat-card" onclick="openCategory('Accounts')"><i class="fas fa-address-card" style="color: #6366F1;"></i><div class="service-cat-name">Accounts</div></div>
-                <div class="service-cat-card" onclick="openCategory('Scripts')"><i class="fas fa-laptop-code" style="color: #2563EB;"></i><div class="service-cat-name">Scripts</div></div>
+            <div id="categoryPane" style="display: block; padding-bottom: 20px;">
+                <div style="margin-bottom: 16px;"><h2 class="section-title" id="catTitle" style="margin:0;"><i class="fab fa-instagram" style="color:#E1306C;"></i> Instagram Services</h2></div>
+                <div id="catProductsList">
+                    <div style="padding:8px 0;">
+                        <div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:55%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>
+                        <div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:45%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>
+                    </div>
+                </div>
             </div>
 
-            <div id="categoryPane" style="display: none; padding-top: 24px; border-top: 1px solid var(--border-color); margin-top: 20px; padding-bottom: 20px;">
-                <div style="margin-bottom: 20px;"><h2 class="section-title" id="catTitle" style="margin:0;">Category Name</h2></div>
-                <div id="catProductsList"></div>
-            </div>
         </div>
 
         <div id="subsTab" class="tab-content">
@@ -1330,7 +1453,7 @@
                 </div>
 
                 <!-- ── IDEA 3: Refer & Earn Card ── -->
-                <div style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(217,119,6,0.04));border:1px solid rgba(245,158,11,0.3);border-radius:var(--border-radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);">
+                <div id="referEarnCard" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(217,119,6,0.04));border:1px solid rgba(245,158,11,0.3);border-radius:var(--border-radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
                         <div style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="fas fa-users" style="color:#f59e0b;font-size:18px;"></i>
@@ -1419,7 +1542,92 @@
                 </div>
 
             </div>
+
+            <!-- ── HOW IT WORKS SECTION ── -->
+            <div class="hiw-section">
+                <h2 class="section-title"><i class="fas fa-route" style="color:var(--accent-cyan);"></i> How It Works</h2>
+                <p class="hiw-subtitle">Get started in just four simple steps — from choosing a platform to receiving your results.</p>
+                <div class="hiw-grid">
+                    <div class="hiw-card">
+                        <div class="hiw-icon-wrap"><i class="fas fa-layer-group"></i></div>
+                        <div class="hiw-body">
+                            <span class="hiw-num">Step 01</span>
+                            <div class="hiw-title">Select Platform</div>
+                            <p class="hiw-desc">Choose the platform you want to use from the available platforms.</p>
+                        </div>
+                    </div>
+                    <div class="hiw-card">
+                        <div class="hiw-icon-wrap"><i class="fas fa-list-ul"></i></div>
+                        <div class="hiw-body">
+                            <span class="hiw-num">Step 02</span>
+                            <div class="hiw-title">Select Service</div>
+                            <p class="hiw-desc">Choose the service you need from the selected platform.</p>
+                        </div>
+                    </div>
+                    <div class="hiw-card">
+                        <div class="hiw-icon-wrap"><i class="fas fa-credit-card"></i></div>
+                        <div class="hiw-body">
+                            <span class="hiw-num">Step 03</span>
+                            <div class="hiw-title">Complete Payment</div>
+                            <p class="hiw-desc">Review your order and complete the payment using the available payment method or balance.</p>
+                        </div>
+                    </div>
+                    <div class="hiw-card">
+                        <div class="hiw-icon-wrap"><i class="fas fa-receipt"></i></div>
+                        <div class="hiw-body">
+                            <span class="hiw-num">Step 04</span>
+                            <div class="hiw-title">Get Your Results</div>
+                            <p class="hiw-desc">Track your order and view the result/status after successful processing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+
+        <!-- ══ SHARED SITE FOOTER — always the last thing inside the scrolling content, so it follows every tab ══ -->
+        <footer class="site-footer" id="siteFooter">
+            <div class="sf-brand">
+                <img id="sfLogo" class="sf-logo" alt="">
+                <div id="sfName" class="sf-name">Wholesale Provider</div>
+            </div>
+            <p class="sf-tagline">Instagram growth services, ordered and tracked from one dashboard.</p>
+
+            <nav class="sf-cols" aria-label="Footer">
+                <div class="sf-col">
+                    <div class="sf-col-title">Popular Services</div>
+                    <ul class="sf-links">
+                        <li><button type="button" class="sf-link" data-service="Instagram"><i class="fab fa-instagram"></i>Instagram Services</button></li>
+                    </ul>
+                </div>
+                <div class="sf-col">
+                    <div class="sf-col-title">Company</div>
+                    <ul class="sf-links">
+                        <li><button type="button" class="sf-link" data-action="hiw"><i class="fas fa-route"></i>How It Works</button></li>
+                        <li><button type="button" class="sf-link" data-tab="subsTab"><i class="fas fa-star"></i>Exclusive Services</button></li>
+                        <li><button type="button" class="sf-link" data-action="refer"><i class="fas fa-gift"></i>Refer &amp; Earn</button></li>
+                        <li><button type="button" class="sf-link" data-tab="chatTab"><i class="fas fa-headset"></i>Support Chat</button></li>
+                        <li id="sfContactItem" hidden><a id="sfContactLink" class="sf-link" href="#" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram-plane"></i>Contact</a></li>
+                    </ul>
+                </div>
+                <div class="sf-col sf-legal">
+                    <div class="sf-col-title">Legal</div>
+                    <ul class="sf-links">
+                        <li><button type="button" class="sf-link" data-legal="terms"><i class="fas fa-file-contract"></i>Terms &amp; Conditions</button></li>
+                        <li><button type="button" class="sf-link" data-legal="privacy"><i class="fas fa-shield-halved"></i>Privacy Policy</button></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sf-trust">
+                <div class="sf-trust-row">
+                    <span class="sf-badge"><i class="fas fa-shield-halved"></i>100% Safe &amp; Secure</span>
+                    <span class="sf-badge"><i class="fas fa-lock"></i>HTTPS Encrypted</span>
+                </div>
+                <span class="sf-badge"><i class="fas fa-headset"></i>24/7 Support</span>
+            </div>
+            <p class="sf-copy">&copy; <span id="sfYear">2026</span> <span id="sfCopyName">Wholesale Provider</span>. All rights reserved.</p>
+        </footer>
 
     </main>
 
@@ -1475,8 +1683,6 @@
                     <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px;">
                         <i class="fas fa-qrcode" style="font-size:16px;"></i><span>Scan to pay via Any UPI App</span>
                     </div>
-                    <div class="upi-text" id="cartUpiId" title="Click to copy" style="font-size: 14px;">Paytmqr6i3w0w@ptys</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-bottom: 12px;">Tap UPI ID to copy</div>
                     <div style="background: rgba(225, 29, 72, 0.05); padding: 10px; border-radius: 8px; border: 1px dashed rgba(225, 29, 72, 0.3);">
                         Order Ref ID: <b id="cartOrderIdDisplay" style="color:var(--accent-pink); font-family:monospace; font-size:15px; letter-spacing:1px;"></b>
                         <div style="font-size:10px; margin-top:4px; color:var(--text-secondary);">* Do not change amount while paying</div>
@@ -1783,16 +1989,6 @@
 
             <!-- Payment Method Toggle -->
             <div class="af-methods" id="afMethodsGrid">
-                <div class="af-method-card selected" id="afMethodUPI" onclick="afSelectMethod('upi')">
-                    <div class="af-selected-dot"></div>
-                    <div class="af-method-icon" style="background:rgba(37,99,235,0.1);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="1" y="4" width="22" height="16" rx="3"/><line x1="1" y1="10" x2="23" y2="10"/>
-                        </svg>
-                    </div>
-                    <div class="af-method-name">UPI</div>
-                    <div class="af-method-sub">Instant • No fees</div>
-                </div>
                 <div class="af-method-card" id="afMethodCrypto" onclick="afSelectMethod('crypto')">
                     <div class="af-selected-dot"></div>
                     <div class="af-method-icon" style="background:rgba(245,158,11,0.1);">
@@ -1803,7 +1999,7 @@
                     <div class="af-method-name">Crypto</div>
                     <div class="af-method-sub">100+ coins</div>
                 </div>
-                <div class="af-method-card" id="afMethodPaypal" onclick="afSelectMethod('paypal')">
+                <div class="af-method-card" id="afMethodPaypal" onclick="afSelectMethod('paypal')" style="display:none;">
                     <div class="af-selected-dot"></div>
                     <div class="af-method-icon" style="background:rgba(0,112,186,0.1);">
                         <i class="fab fa-paypal" style="font-size:22px;color:#003087;"></i>
@@ -1824,6 +2020,16 @@
                     </div>
                     <div class="af-method-name">Binance</div>
                     <div class="af-method-sub">Crypto Exchange</div>
+                </div>
+                <div class="af-method-card selected" id="afMethodUPI" onclick="afSelectMethod('upi')" style="grid-column: 1 / -1;">
+                    <div class="af-selected-dot"></div>
+                    <div class="af-method-icon" style="background:rgba(37,99,235,0.1);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="3"/><line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="af-method-name">UPI</div>
+                    <div class="af-method-sub">Instant • No fees</div>
                 </div>
             </div>
 
@@ -2205,8 +2411,6 @@
                     <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px;">
                         <i class="fas fa-qrcode" style="font-size:16px;"></i><span>Scan to pay via Any UPI App</span>
                     </div>
-                    <div class="upi-text" id="wfUpiId" title="Click to copy" style="font-size: 14px;">Paytmqr6i3w0w@ptys</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-bottom: 12px;">Tap UPI ID to copy</div>
                     <div style="background: rgba(225, 29, 72, 0.05); padding: 10px; border-radius: 8px; border: 1px dashed rgba(225, 29, 72, 0.3);">
                         Ref ID: <b id="wfOrderIdDisplay" style="color:var(--accent-pink); font-family:monospace; font-size:15px; letter-spacing:1px;"></b>
                         <div style="font-size:10px; margin-top:4px; color:var(--text-secondary);">* Do not change amount while paying</div>
@@ -2236,14 +2440,27 @@
 
             <!-- STEP 1: Details and Promo Code -->
             <div id="chkStep1">
-                <div class="checkout-summary">
-                    <img id="chkImg" class="checkout-img" src="" alt="Item">
-                    <div style="flex: 1;">
-                        <div id="chkTitle" style="font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text-primary);"></div>
-                        <div id="chkType" style="font-size:12px; color:var(--text-secondary);"></div>
+                <div class="checkout-summary chk-card">
+                    <div class="chk-card-top">
+                        <div class="chk-card-icon">
+                            <i id="chkIcon" class="fas fa-star"></i>
+                            <img id="chkImg" class="checkout-img" src="" alt="Item">
+                        </div>
+                        <div class="chk-card-info">
+                            <div id="chkType" class="chk-card-sub"></div>
+                            <div id="chkTitle" class="chk-card-title"></div>
+                        </div>
                     </div>
-                    <div style="text-align:right;">
-                        <div id="chkPrice" style="font-weight:700; color:var(--text-primary); font-size:16px;"></div>
+                    <div class="chk-card-bottom">
+                        <div class="chk-card-price">
+                            <span id="chkPrice" class="chk-card-price-amt"></span>
+                            <span id="chkPriceNote" class="chk-card-price-note"></span>
+                        </div>
+                        <div id="chkQtyRow" class="qty-stepper" style="display:none;">
+                            <button type="button" id="chkQtyMinus" onclick="chkQtyChange(-1)" aria-label="Decrease quantity"><i class="fas fa-minus"></i></button>
+                            <span id="chkQtyValue">1</span>
+                            <button type="button" id="chkQtyPlus" onclick="chkQtyChange(1)" aria-label="Increase quantity"><i class="fas fa-plus"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -2292,8 +2509,6 @@
                         <span>Scan to pay via Any UPI App</span>
                     </div>
 
-                    <div class="upi-text" id="chkUpiId" title="Click to copy" style="font-size: 14px;">Paytmqr6i3w0w@ptys</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-bottom: 12px;">Tap UPI ID to copy</div>
 
                     <div style="background: rgba(225, 29, 72, 0.05); padding: 10px; border-radius: 8px; border: 1px dashed rgba(225, 29, 72, 0.3);">
                         Order Ref ID: <b id="chkOrderIdDisplay" style="color:var(--accent-pink); font-family:monospace; font-size:15px; letter-spacing:1px;"></b>
@@ -3113,6 +3328,104 @@
 
     let currentUser = null; let _authReady = false; let productsData = {}; let subsData = {}; let activeSubscriptions = {}; 
     let couponsData = {}; let checkoutItem = null; let checkoutFinalAmt = 0; let appliedCouponKey = null; let notificationsBound = false;
+
+    // ── Checkout quantity stepper ───────────────────────────────────────────
+    // Each "+" adds the service's base quantity (1000 -> 2000 -> 3000 ...) and
+    // multiplies the price by the same factor. checkoutItem is a working COPY of
+    // the catalog item, so title / quantity / discountedPrice are updated on the
+    // copy and every downstream step (QR amount, wallet debit, order record,
+    // provider API quantity, notifications) automatically uses the new values.
+    const CHK_QTY_MAX_MULT = 100;   // max quantity = base quantity x 100
+    let chkQtyMult = 1;
+    let chkQtyBase = null;          // { title, quantityRaw, qty, priceRaw, price } of the un-scaled service
+
+    function chkFmtNum(n) { return Number(n).toLocaleString('en-IN'); }
+    function chkQtyEligible(item, isFree) {
+        return !!item && item.purchaseType === 'product' && !isFree && !item.customComments
+            && parseInt(item.quantity, 10) > 0 && parseFloat(item.discountedPrice) > 0;
+    }
+    function chkQtySetBase(item) {
+        chkQtyBase = {
+            title: item.title,
+            quantityRaw: item.quantity, qty: parseInt(item.quantity, 10),
+            priceRaw: item.discountedPrice, price: parseFloat(item.discountedPrice)
+        };
+        chkQtyMult = 1;
+    }
+    // "1000 Reels Views" -> "2000 Reels Views" (also handles 1,000 / 1K style titles);
+    // if the title has no quantity in it, falls back to "<title> ×N".
+    function chkQtyTitle(baseTitle, baseQty, newQty, mult) {
+        const title = String(baseTitle || '');
+        const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const forms = [];
+        if (baseQty >= 1000) {   // comma-formatted titles: 1,000 -> 2,000
+            forms.push({ re: esc(baseQty.toLocaleString('en-US')), out: () => newQty.toLocaleString('en-US') });
+            forms.push({ re: esc(baseQty.toLocaleString('en-IN')), out: () => newQty.toLocaleString('en-IN') });
+        }
+        forms.push({ re: esc(String(baseQty)), out: () => String(newQty) });
+        if (baseQty >= 1000) forms.push({ re: esc(String(baseQty / 1000)) + '([kK])', out: (m) => String(newQty / 1000) + m[2] });
+        for (const f of forms) {
+            const rx = new RegExp('(^|[^\\d,.])' + f.re + '(?![\\d,])');
+            const m = title.match(rx);
+            if (m) return title.replace(rx, (all, pre, suffix) => pre + f.out([all, pre, suffix]));
+        }
+        return title + ' ×' + mult;
+    }
+    // Applies the current multiplier to `item` and returns the new price.
+    function chkQtyMutateItem(item) {
+        const b = chkQtyBase; if (!b || !item) return 0;
+        const m = chkQtyMult, qty = b.qty * m, price = +(b.price * m).toFixed(2);
+        if (m === 1) { item.quantity = b.quantityRaw; item.discountedPrice = b.priceRaw; item.title = b.title; return price; }
+        item.quantity = (typeof b.quantityRaw === 'string') ? String(qty) : qty;
+        item.discountedPrice = (typeof b.priceRaw === 'string') ? String(price) : price;
+        item.title = chkQtyTitle(b.title, b.qty, qty, m);
+        return price;
+    }
+    function chkTypeText(item, isFree) {
+        if (isFree) return '🎁 Free Service · Daily Claim';
+        if (item.purchaseType === 'exclusive_pack') return '⭐ Exclusive Pack';
+        if (item.purchaseType === 'product') return [item.category, item.subCategory].filter(Boolean).join(' · ') || 'Digital Service';
+        return `${item.duration} Days Subscription`;
+    }
+    // Card icon (platform logo when there is no image) + the small note next to the price
+    function chkSetCardMeta(item, isFree) {
+        const icon = document.getElementById('chkIcon');
+        if (icon) {
+            let cls = 'fas fa-star';
+            if (item.purchaseType === 'product') cls = ((window._categoryIconMap || {})[item.category] || window._defaultCategoryIcon || { icon: cls }).icon;
+            else if (item.purchaseType === 'exclusive_pack') cls = 'fas fa-crown';
+            else if (item.purchaseType === 'subscription') cls = 'fas fa-gem';
+            icon.className = cls;
+        }
+        const note = document.getElementById('chkPriceNote');
+        if (note) note.textContent = isFree ? '' : (item.purchaseType === 'subscription' ? `for ${item.duration} days` : 'one-time');
+    }
+    function chkQtyRender() {
+        const row = document.getElementById('chkQtyRow'); if (!row) return;
+        if (!chkQtyBase) { row.style.display = 'none'; return; }
+        row.style.display = 'flex';
+        document.getElementById('chkQtyValue').textContent = chkQtyMult;   // shows 1, 2, 3 ... (base quantity is not shown)
+        document.getElementById('chkQtyMinus').disabled = chkQtyMult <= 1;
+        document.getElementById('chkQtyPlus').disabled  = chkQtyMult >= CHK_QTY_MAX_MULT;
+    }
+    window.chkQtyChange = (delta) => {
+        if (!chkQtyBase || !checkoutItem) return;
+        const next = Math.max(1, Math.min(CHK_QTY_MAX_MULT, chkQtyMult + delta));
+        if (next === chkQtyMult) return;
+        chkQtyMult = next;
+        checkoutFinalAmt = chkQtyMutateItem(checkoutItem);
+        appliedCouponKey = null;   // price changed -> any applied coupon is cleared
+        const ci = document.getElementById('chkCouponInput'); if (ci) ci.value = '';
+        const cm = document.getElementById('chkCouponMsg');   if (cm) cm.textContent = '';
+        const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+        setTxt('chkTitle', checkoutItem.title);
+        setTxt('chkPrice', `₹${(+checkoutFinalAmt).toFixed(2)}`);
+        setTxt('chkFinalPrice', `₹${(+checkoutFinalAmt).toFixed(2)}`);
+        setTxt('chkPayAmt', `₹${(+checkoutFinalAmt).toFixed(2)}`);
+        chkQtyRender();
+        if (currentOrderId) updateQRCode(checkoutFinalAmt, currentOrderId);
+        pgwSnapshotChk();
+    };
     let currentCatView = { level: 0, cat: '', subCat: '' };
     let walletBalance = 0; let wfAmount = 0; let wfOrderId = '';
     let linkMgmtRules = {};
@@ -3181,6 +3494,7 @@
             itemId: checkoutItem.id,
             itemType: checkoutItem.purchaseType,
             appliedCouponKey,
+            qtyMult: chkQtyBase ? chkQtyMult : 1,
             targetLink:  val('chkLinkInput'),
             targetLink2: val('chkLinkInput2'),
             targetLink3: val('chkLinkInput3'),
@@ -3245,6 +3559,12 @@
                 if(!found) { pgwClearSession(); return; }
                 item = { ...found, id: data.itemId, purchaseType: data.itemType };
             }
+            if (item.purchaseType === 'product' && chkQtyEligible(item, false)) {
+                chkQtySetBase(item);
+                const _qm = Math.min(CHK_QTY_MAX_MULT, Math.max(1, parseInt(data.qtyMult, 10) || 1));
+                if (_qm > 1) { chkQtyMult = _qm; chkQtyMutateItem(item); }
+            } else { chkQtyBase = null; chkQtyMult = 1; }
+            chkQtyRender();
             checkoutItem = item;
             checkoutFinalAmt = parseFloat(data.amount) || 0;
             appliedCouponKey = data.appliedCouponKey || null;
@@ -3255,9 +3575,10 @@
             if(imgEl) { if(item.imageUrl) { imgEl.src = item.imageUrl; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; } }
             const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
             setTxt('chkTitle', item.title || item.planName || item.packName || '');
-            setTxt('chkPrice', `₹${checkoutFinalAmt}`);
-            setTxt('chkFinalPrice', `₹${checkoutFinalAmt}`);
-            setTxt('chkPayAmt', `₹${checkoutFinalAmt}`);
+            setTxt('chkType', chkTypeText(item, false)); chkSetCardMeta(item, false);
+            setTxt('chkPrice', `₹${(+checkoutFinalAmt).toFixed(2)}`);
+            setTxt('chkFinalPrice', `₹${(+checkoutFinalAmt).toFixed(2)}`);
+            setTxt('chkPayAmt', `₹${(+checkoutFinalAmt).toFixed(2)}`);
             const setVal = (id, v) => { const el = document.getElementById(id); if(el) el.value = v || ''; };
             setVal('chkLinkInput', data.targetLink);
             setVal('chkLinkInput2', data.targetLink2);
@@ -3296,7 +3617,6 @@
             wfOrderId = data.orderId;
             const upiId = "Paytmqr6i3w0w@ptys";
             const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-            setTxt('wfUpiId', upiId);
             setTxt('wfPayAmt', `₹${wfAmount.toFixed(2)}`);
             setTxt('wfOrderIdDisplay', wfOrderId);
             const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent("SACHIN SAYSING RAUT")}&am=${wfAmount}&cu=INR&tr=${wfOrderId}`;
@@ -3319,7 +3639,6 @@
 
             const upiId = "Paytmqr6i3w0w@ptys";
             const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-            setTxt('cartUpiId', upiId);
             setTxt('cartPayAmt', `₹${cartFinalAmt.toFixed(2)}`);
             setTxt('cartOrderIdDisplay', cartOrderId);
             const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent("SACHIN SAYSING RAUT")}&am=${cartFinalAmt}&cu=INR&tr=${cartOrderId}`;
@@ -3668,7 +3987,7 @@
         }
         tabContents.forEach(tc => tc.classList.remove('active'));
         document.getElementById(targetId).classList.add('active');
-        if (targetId !== 'homeTab') { document.getElementById('categoryPane').style.display = 'none'; currentCatView.level = 0; }
+        if (targetId !== 'homeTab') { currentCatView.level = 0; } else if (typeof _productsLoaded !== 'undefined' && _productsLoaded && currentCatView.level === 0) { window.openCategory('Instagram', true); }
         navItems.forEach(nav => { nav.classList.toggle('active', nav.dataset.target === targetId); });
         document.querySelector('.content-area').scrollTo(0,0);
         // Reset userUnread badge when chat tab opened + scroll to latest message
@@ -3685,13 +4004,15 @@
     navItems.forEach(nav => { nav.addEventListener('click', () => switchTab(nav.dataset.target)); });
     document.getElementById('headerProfileBtn').addEventListener('click', () => switchTab('profileTab'));
 
-    window.openCategory = (catName) => { 
+    // Store is Instagram-only: every category view resolves to Instagram.
+    window.openCategory = (catName, silent) => { 
+        catName = 'Instagram';
         currentCatView = { level: 1, cat: catName, subCat: '' };
         const catTitle = document.getElementById('catTitle');
-        catTitle.innerHTML = `<i class="fas fa-layer-group" style="color:var(--accent-cyan);"></i> ${catName}`;
+        catTitle.innerHTML = `<i class="fab fa-instagram" style="color:#E1306C;"></i> Instagram Services`;
         const list = document.getElementById('catProductsList');
         const pane = document.getElementById('categoryPane'); pane.style.display = 'block';
-        setTimeout(() => { const contentArea = document.querySelector('.content-area'); const targetPos = Math.max(0, pane.offsetTop - 40); contentArea.scrollTo({ top: targetPos, behavior: 'smooth' }); }, 50);
+        if (!silent) setTimeout(() => { const contentArea = document.querySelector('.content-area'); const targetPos = Math.max(0, pane.offsetTop - 40); contentArea.scrollTo({ top: targetPos, behavior: 'smooth' }); }, 50);
         // Show skeleton while data loads on slow network
         if (!_productsLoaded) {
             list.innerHTML = `<div style="padding:8px 0;">${[1,2,3].map(()=>`<div style="background:var(--card-solid);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><div style="background:var(--border-color);border-radius:6px;height:14px;width:55%;animation:skeletonPulse 1.2s ease-in-out infinite;"></div><div style="background:var(--border-color);border-radius:6px;height:26px;width:80px;animation:skeletonPulse 1.2s ease-in-out infinite;"></div></div>`).join('')}</div>`;
@@ -4516,6 +4837,12 @@
     function handleAuthUser(user) {
         currentUser = user;
         if(user) {
+            // Remember that this device has successfully authenticated at least once
+            // (real account OR guest). Lets _resolveActiveSession() below tell a
+            // genuinely brand-new visitor apart from an existing user who is simply
+            // signed out right now (e.g. after a real Google/PIN logout) — the latter
+            // must still see the normal login screen, never auto-guest.
+            try { localStorage.setItem('hasAuthedBefore', '1'); } catch(_) {}
             // ── Email verification gate (skip for Google users AND username+PIN accounts) ──
             const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
             const isPinAccount = !!(user.email && user.email.endsWith(PIN_DOMAIN));
@@ -4665,7 +4992,7 @@
     // event is only allowed to touch the dashboard when no Google/username
     // account is currently signed in, so it can never hijack an active
     // Google session.
-    let _authInitDone = false, _guestInitDone = false;
+    let _authInitDone = false, _guestInitDone = false, _autoGuestAttempted = false;
     function _resolveActiveSession(source) {
         if (source === 'auth') _authInitDone = true;
         if (source === 'guest') _guestInitDone = true;
@@ -4677,7 +5004,33 @@
         // persisted guest session from storage, we'd briefly treat a real guest as
         // logged out, and a "Continue as Guest" tap in that window would create a
         // brand-new anonymous account instead of resuming the real one.
-        if (_authInitDone && _guestInitDone) { currentAuthApp = null; handleAuthUser(null); }
+        if (_authInitDone && _guestInitDone) {
+            currentAuthApp = null;
+            // ── NEW-USER AUTO-GUEST ──────────────────────────────────────────
+            // If this device has NEVER successfully authenticated before (no real
+            // account, no guest ever created — checked via the flag set in
+            // handleAuthUser), there is no existing account/session to protect,
+            // so auto-create the guest account instead of waiting for a manual
+            // "Continue as Guest" tap. Existing users never reach this branch:
+            // a real account or a live guest session already returned above, and
+            // a user who explicitly logged out of a real account still carries
+            // the flag, so they correctly fall through to the normal login screen.
+            let _hasAuthedBefore = true;
+            try { _hasAuthedBefore = localStorage.getItem('hasAuthedBefore') === '1'; } catch(_) {}
+            if (!_hasAuthedBefore && !_autoGuestAttempted) {
+                _autoGuestAttempted = true;
+                const anonBtn = document.getElementById('anonSignInBtn');
+                if (anonBtn) {
+                    anonBtn.click();
+                    // Safety net: if auto guest sign-in doesn't succeed (e.g. no
+                    // network), fall back to the normal login screen so the user
+                    // isn't stuck on a blank view and can retry manually.
+                    setTimeout(() => { if (!currentUser) handleAuthUser(null); }, 8000);
+                    return;
+                }
+            }
+            handleAuthUser(null);
+        }
     }
     onAuthStateChanged(auth, () => _resolveActiveSession('auth'));
     onAuthStateChanged(guestAuth, () => _resolveActiveSession('guest'));
@@ -4685,7 +5038,7 @@
     function bindRealTimeNotifications(uid) { 
         if(notificationsBound) return; notificationsBound = true;
         const userOrdersQuery = query(ref(activeDb(), 'orders'), orderByChild('userId'), equalTo(uid));
-        onChildChanged(userOrdersQuery, (snap) => { const o = snap.val(); if(o && o.status) { notifyLive(`🔔 Order #${snap.key.slice(-6).toUpperCase()} is now ${o.status.toUpperCase()}`); } });
+        onChildChanged(userOrdersQuery, (snap) => { const o = snap.val(); if(o && o.status) { notifyLive(`🔔 Order ${fmtOrderId(snap.key,o)} is now ${o.status.toUpperCase()}`); } });
     }
 
     function bindAdminMessageNotification(uid) {
@@ -5684,13 +6037,6 @@
         document.getElementById('afTotalVal').textContent   = fmt(amount);
     }
 
-    document.getElementById('wfUpiId').addEventListener('click', () => {
-        const t = document.getElementById('wfUpiId').textContent;
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(t).then(() => showToast('UPI ID Copied!')).catch(() => showToast('Copied!'));
-        }
-    });
-
     window.goToWfStep2 = () => {
         wfAmount = parseFloat(document.getElementById('wfAmountInput').value);
         const inp = document.getElementById('wfAmountInput');
@@ -5707,7 +6053,6 @@
         inp.classList.add('input-success');
         wfOrderId = generateUTR(12);
         const upiId = "Paytmqr6i3w0w@ptys";
-        document.getElementById('wfUpiId').textContent     = upiId;
         document.getElementById('wfPayAmt').textContent    = `₹${wfAmount.toFixed(2)}`;
         document.getElementById('wfOrderIdDisplay').textContent = wfOrderId;
         const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent("SACHIN SAYSING RAUT")}&am=${wfAmount}&cu=INR&tr=${wfOrderId}`;
@@ -6002,15 +6347,16 @@
         };
         checkoutFinalAmt = parseFloat(pack.price);
         appliedCouponKey = null;
+        chkQtyBase = null; chkQtyMult = 1; chkQtyRender();
 
         // Populate checkout modal
         const imgEl = document.getElementById('chkImg');
         if (imgEl) imgEl.style.display = 'none';
         document.getElementById('chkTitle').textContent = pack.packName || pack.planName;
-        document.getElementById('chkType').textContent = '⭐ Exclusive Pack';
-        document.getElementById('chkPrice').textContent = `₹${checkoutFinalAmt}`;
-        document.getElementById('chkFinalPrice').textContent = `₹${checkoutFinalAmt}`;
-        document.getElementById('chkPayAmt').textContent = `₹${checkoutFinalAmt}`;
+        document.getElementById('chkType').textContent = '⭐ Exclusive Pack'; chkSetCardMeta(checkoutItem, false);
+        document.getElementById('chkPrice').textContent = `₹${(+checkoutFinalAmt).toFixed(2)}`;
+        document.getElementById('chkFinalPrice').textContent = `₹${(+checkoutFinalAmt).toFixed(2)}`;
+        document.getElementById('chkPayAmt').textContent = `₹${(+checkoutFinalAmt).toFixed(2)}`;
         document.getElementById('chkCouponInput').value = '';
         document.getElementById('chkCouponMsg').textContent = '';
 
@@ -6086,6 +6432,9 @@
             ...gatewayMeta,
         };
         const packOrderRef = push(ref(activeDb(), 'orders'));
+        const _packNo = (parseFloat(finalAmt) > 0) ? await getNextOrderNo() : null;
+        if (_packNo) packOrderData.orderNo = _packNo;
+        window._lastPackOrderNo = _packNo;
         await set(packOrderRef, packOrderData);
         orderIds.push(packOrderRef.key);
 
@@ -6189,7 +6538,7 @@
     };
     window._defaultCategoryIcon = {icon:'fas fa-star', color:'#64748b'};
     // Fallback order used only if admin has never saved a category map to Firebase yet
-    window._fallbackCategoryOrder = ['Instagram','Facebook','Telegram','WhatsApp','YouTube','TikTok','Twitter','Accounts','Scripts'];
+    window._fallbackCategoryOrder = ['Instagram'];
 
     window._categoryIconHTML = (cat) => {
         const cfg = window._categoryIconMap[cat] || window._defaultCategoryIcon;
@@ -6203,7 +6552,7 @@
         const grid = document.getElementById('servicesGridReal');
         if (!grid) return;
         if (!categories || !categories.length) { grid.innerHTML = ''; return; }
-        grid.innerHTML = categories.map(cat => `<div class="service-cat-card" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">${window._categoryIconHTML(cat)}<div class="service-cat-name">${cat}</div></div>`).join('');
+        grid.innerHTML = categories.map(cat => `<div class="service-cat-card" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">${window._categoryIconHTML(cat)}<div class="service-cat-name">${cat}</div><button class="service-cat-select-btn" onclick="event.stopPropagation();openCategory('${cat.replace(/'/g, "\\'")}')">Select</button></div>`).join('');
     };
 
     // ── ADVERTISEMENT CAROUSEL ──────────────────────────────────────────
@@ -6214,7 +6563,7 @@
     let offerResumeTimer = null;
     let offerDrag = { active: false, startX: 0, deltaX: 0, pointerId: null };
     let offerBrandLogoUrl = '';
-    const OFFER_AUTOPLAY_MS = 4500;
+    const OFFER_AUTOPLAY_MS = 5000;
     const OFFER_RESUME_DELAY_MS = 2500;
     const offerReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -6229,11 +6578,8 @@
         const newRate = (slide.newRate !== undefined && slide.newRate !== null && slide.newRate !== '') ? slide.newRate : 0;
         const oldRate = slide.oldRate;
         const imgUrl = slide.imageUrl || offerBrandLogoUrl || '';
-        const product = slide.productId ? productsData[slide.productId] : null;
-        const canBuy = !!(slide.productId && product && product.isActive !== false);
-        const buyBtn = canBuy
-            ? `<button type="button" class="offer-tg-cta offer-buy-btn" onclick="initCheckout('${slide.productId}','product')"><i class="fas fa-bolt"></i>&nbsp;Buy Now</button>`
-            : '';
+        // Buy CTA now lives in the persistent strip below the carousel (#offerBuyStrip),
+        // kept in sync with the active slide by offerUpdateBuyStrip() — not rendered per-slide.
         return `<div class="offer-slide">
                 <div class="offer-content">
                     <div class="offer-pill"><i class="fas fa-tag" style="font-size:9px;"></i>&nbsp;${badge}</div>
@@ -6243,7 +6589,6 @@
                         ${oldRate ? `<span class="offer-old-price">₹${offerEscapeHtml(oldRate)}</span>` : ''}
                     </div>
                     <div class="offer-limit-row"><i class="fas fa-fire" style="font-size:10px;color:#fbbf24;"></i>&nbsp;<span>${desc}</span></div>
-                    ${buyBtn}
                 </div>
                 <div class="offer-circle-deco">
                     ${imgUrl ? `<img src="${offerEscapeHtml(imgUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : `<i class="fas fa-shield-alt" style="color:#2563eb;font-size:22px;"></i>`}
@@ -6251,6 +6596,32 @@
                 </div>
             </div>`;
     }
+
+    function offerSlideCanBuy(slide) {
+        if (!slide || !slide.productId) return false;
+        const product = productsData[slide.productId];
+        return !!(product && product.isActive !== false);
+    }
+
+    function offerUpdateBuyStrip() {
+        const strip = document.getElementById('offerBuyStrip');
+        if (!strip) return;
+        const slide = offerActiveSlides[offerRealIndex];
+        if (slide && offerSlideCanBuy(slide)) {
+            strip.classList.add('visible');
+            strip.dataset.productId = slide.productId;
+        } else {
+            strip.classList.remove('visible');
+            delete strip.dataset.productId;
+        }
+    }
+
+    window.offerBuyStripClick = () => {
+        const strip = document.getElementById('offerBuyStrip');
+        const productId = strip && strip.dataset.productId;
+        if (!productId) return;
+        initCheckout(productId, 'product');
+    };
 
     function offerSetPosition(trackIndex, animate) {
         const track = document.getElementById('offerTrack');
@@ -6295,6 +6666,7 @@
             track.style.transform = 'translateX(0%)';
             dotsWrap.innerHTML = '';
             stopOfferAutoplay();
+            offerUpdateBuyStrip();
             return;
         }
 
@@ -6309,6 +6681,7 @@
             `<button type="button" class="offer-dot${i === offerRealIndex ? ' active' : ''}" data-idx="${i}" aria-label="Go to slide ${i + 1}"></button>`
         ).join('');
 
+        offerUpdateBuyStrip();
         startOfferAutoplay();
     }
 
@@ -6323,6 +6696,7 @@
         offerSetPosition(rawTrackIndex, true);
         offerRealIndex = nextRealIndex;
         offerUpdateDots();
+        offerUpdateBuyStrip();
         if (track && (rawTrackIndex === 0 || rawTrackIndex === n + 1)) {
             const onEnd = () => { track.removeEventListener('transitionend', onEnd); offerSetPosition(offerRealIndex + 1, false); };
             track.addEventListener('transitionend', onEnd);
@@ -6384,6 +6758,9 @@
             };
             viewport.addEventListener('pointerdown', (e) => {
                 if (e.button !== undefined && e.button !== 0) return;
+                // Don't hijack taps that start on the slide's own buttons/links (e.g. "Buy Now") —
+                // grabbing pointer capture on the viewport here was swallowing their click.
+                if (e.target.closest('button, a')) return;
                 dragStart(e.clientX);
                 try { viewport.setPointerCapture(e.pointerId); } catch (_) {}
             });
@@ -6391,8 +6768,10 @@
             viewport.addEventListener('pointerup', dragEnd);
             viewport.addEventListener('pointercancel', dragEnd);
             viewport.addEventListener('pointerleave', () => { if (offerDrag.active) dragEnd(); });
-            viewport.addEventListener('mouseenter', () => { if (offerActiveSlides.length > 1) stopOfferAutoplay(); });
-            viewport.addEventListener('mouseleave', () => { if (!offerDrag.active) pauseThenResumeOfferAutoplay(); });
+            // Hover-based pause (mouseenter/mouseleave) removed — on mobile/WebView these
+            // fire inconsistently after a touch (mouseenter without a matching mouseleave),
+            // which was leaving autoplay stuck stopped forever. Drag pause/resume above is
+            // the only thing that pauses it now, so it keeps auto-sliding indefinitely.
         }
     }
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initOfferCarouselControls); }
@@ -6406,19 +6785,14 @@
         onValue(ref(activeDb(), 'meta/linkMgmt'), s => { linkMgmtRules = s.exists() ? s.val() : {}; });
         let _firstProductLoad = true;
         onValue(ref(activeDb(), 'products'), s => {
-            productsData = s.exists() ? s.val() : {};
+            // Instagram-only store: drop every non-Instagram service before anything else sees it
+            productsData = {};
+            if (s.exists()) Object.entries(s.val()).forEach(([pid, p]) => { if (p && String(p.category || '').trim().toLowerCase() === 'instagram') productsData[pid] = p; });
             _productsLoaded = true;
             pgwTryRestoreAfterAuth();
             renderOfferCarousel(true);
-            // ── Reveal real service grid, hide skeleton ──
-            const skeleton = document.getElementById('serviceGridSkeleton');
-            const realGrid = document.getElementById('servicesGridReal');
-            if (skeleton) skeleton.style.display = 'none';
-            if (realGrid) realGrid.style.display = 'grid';
-            if(document.getElementById('categoryPane').style.display === 'block') {
-                if(currentCatView.level === 1) { openCategory(currentCatView.cat); }
-                else if(currentCatView.level === 2) { openSubCategory(currentCatView.cat, currentCatView.subCat); }
-            }
+            if (currentCatView.level === 2) { openSubCategory(currentCatView.cat, currentCatView.subCat); }
+            else if (document.getElementById('homeTab').classList.contains('active')) { openCategory('Instagram', true); }
             if(_firstProductLoad) { _firstProductLoad = false; }
         });
         onValue(ref(activeDb(), 'exclusivePacks'), s => { 
@@ -6559,7 +6933,7 @@
                         _cardDiv.style.animationDelay = (arr.indexOf(o) * 60) + 'ms';
                         _cardDiv.innerHTML = `
                                 <div class="order-header">
-                                    <span>Order ID: #${o.id.slice(-6).toUpperCase()}</span>
+                                    <span>Order ID: ${fmtOrderId(o.id,o)}</span>
                                     ${statusBadge}
                                 </div>
                                 <div class="order-info">
@@ -6626,7 +7000,7 @@
                 _oCard.style.animationDelay = (arr.indexOf(o) * 60) + 'ms';
                 _oCard.innerHTML = `
                         <div class="order-header">
-                            <span>Order ID: #${o.id.slice(-6).toUpperCase()}</span>
+                            <span>Order ID: ${fmtOrderId(o.id,o)}</span>
                             ${statusBadge}
                         </div>
                         <div class="order-info">
@@ -6752,6 +7126,20 @@
         input.value = '';
     });
 
+    // ── Sequential 5-digit order numbers (paid orders only) ──
+    async function getNextOrderNo() {
+        try {
+            const res = await runTransaction(ref(activeDb(), 'meta/orderCounter'), c => (typeof c === 'number' ? c : 0) + 1);
+            if (res.committed && typeof res.snapshot.val() === 'number') return res.snapshot.val();
+        } catch (e) { console.warn('orderCounter unavailable, using legacy ID', e); }
+        return null;
+    }
+    function fmtOrderId(id, o) {
+        return (o && o.orderNo) ? '#' + String(o.orderNo).padStart(5, '0') : '#' + String(id).slice(-6).toUpperCase();
+    }
+    window.getNextOrderNo = getNextOrderNo;
+    window.fmtOrderId = fmtOrderId;
+
     function generateUTR(length = 12) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let utr = "";
@@ -6818,7 +7206,6 @@
     window.updateQRCode = (amount, orderId) => {
         const upiId = "Paytmqr6i3w0w@ptys"; 
         const upiName = "SACHIN SAYSING RAUT"; 
-        document.getElementById('chkUpiId').textContent = upiId;
 
         const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(upiName)}&am=${amount}&cu=INR&tr=${orderId}`;
         const qrImg = document.getElementById('dynamic-qr');
@@ -6830,7 +7217,9 @@
 
     window.initCheckout = (id, type) => { 
         if(!currentUser) { showToast('Please login to purchase!'); switchTab('profileTab'); return; }
-        checkoutItem = type === 'product' ? productsData[id] : subsData[id]; if(!checkoutItem) return showToast('Item unavailable');
+        const _srcItem = type === 'product' ? productsData[id] : subsData[id]; if(!_srcItem) return showToast('Item unavailable');
+        _srcItem.id = id; _srcItem.purchaseType = type;
+        checkoutItem = { ..._srcItem };   // working copy: quantity stepper edits this, never the catalog item
         if(type === 'product' && checkoutItem.isActive === false) return showToast('⚠️ This service is currently unavailable');
         checkoutItem.id = id; checkoutItem.purchaseType = type; checkoutFinalAmt = (type === 'product' && checkoutItem.customComments) ? 0 : (type === 'product' ? parseFloat(checkoutItem.discountedPrice) : parseFloat(checkoutItem.price)); appliedCouponKey = null;
 
@@ -6874,10 +7263,13 @@
     function _openCheckoutModal(id, type, isFreeService) {
         const imgEl = document.getElementById('chkImg'); if(checkoutItem.imageUrl) { imgEl.src = checkoutItem.imageUrl; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; }
         document.getElementById('chkTitle').textContent = checkoutItem.title || checkoutItem.planName; 
-        document.getElementById('chkType').textContent = isFreeService ? '🎁 Free Service · Daily Claim' : (type === 'product' ? 'Digital Service' : `${checkoutItem.duration} Days Subscription`); 
-        document.getElementById('chkPrice').textContent = isFreeService ? 'FREE' : `₹${checkoutFinalAmt}`; 
-        document.getElementById('chkFinalPrice').textContent = isFreeService ? 'FREE' : `₹${checkoutFinalAmt}`; 
-        document.getElementById('chkPayAmt').textContent = isFreeService ? 'FREE' : `₹${checkoutFinalAmt}`;
+        document.getElementById('chkType').textContent = chkTypeText(checkoutItem, isFreeService); chkSetCardMeta(checkoutItem, isFreeService);
+        document.getElementById('chkPrice').textContent = isFreeService ? 'FREE' : `₹${(+checkoutFinalAmt).toFixed(2)}`; 
+        document.getElementById('chkFinalPrice').textContent = isFreeService ? 'FREE' : `₹${(+checkoutFinalAmt).toFixed(2)}`; 
+        document.getElementById('chkPayAmt').textContent = isFreeService ? 'FREE' : `₹${(+checkoutFinalAmt).toFixed(2)}`;
+        // Quantity stepper — only for paid, fixed-quantity services
+        if (chkQtyEligible(checkoutItem, isFreeService)) chkQtySetBase(checkoutItem); else { chkQtyBase = null; chkQtyMult = 1; }
+        chkQtyRender();
         document.getElementById('chkCouponInput').value = ''; document.getElementById('chkCouponMsg').textContent = ''; document.getElementById('chkLinkInput').value = ''; document.getElementById('chkLinkInput2').value = ''; document.getElementById('chkLinkInput3').value = ''; document.getElementById('chkLinkInput4').value = ''; document.getElementById('chkLinkInput5').value = ''; document.getElementById('chkPollInput').value = '';
 
         // Free service — hide payment/coupon/wallet, change button
@@ -7029,7 +7421,7 @@
                     amount: checkoutFinalAmt.toFixed(2),
                     product: checkoutItem.title,
                     utr, link: reelLink,
-                    orderId: packOrderKey.slice(-6).toUpperCase(),
+                    orderId: (window._lastPackOrderNo ? String(window._lastPackOrderNo).padStart(5,'0') : packOrderKey.slice(-6).toUpperCase()),
                     method: 'UPI', status: 'progress',
                     isExclusivePack: true,
                     serviceCount: (checkoutItem.selectedServices || []).length,
@@ -7130,6 +7522,7 @@
             };
 
             const newOrderRef = push(ref(activeDb(), 'orders'));
+            const _no1 = await getNextOrderNo(); if (_no1) orderData.orderNo = _no1;
             const writes = [set(newOrderRef, orderData)];
             if (appliedCouponKey) {
                 writes.push(update(ref(activeDb(), `coupons/${appliedCouponKey}`), {
@@ -7146,7 +7539,7 @@
                 amount: checkoutFinalAmt.toFixed(2),
                 product: checkoutItem.title || checkoutItem.planName || 'Service',
                 utr, link: targetLink || null,
-                orderId: newOrderRef.key.slice(-6).toUpperCase(),
+                orderId: fmtOrderId(newOrderRef.key, orderData).slice(1),
                 method: 'UPI', status: orderData.status,
                 notifyMsg: '✅ Payment Verified & Order Placed Successfully!'
             });
@@ -7195,7 +7588,7 @@
                     amount: checkoutFinalAmt.toFixed(2),
                     product: checkoutItem.title,
                     utr, link: reelLink,
-                    orderId: packOrderKey.slice(-6).toUpperCase(),
+                    orderId: (window._lastPackOrderNo ? String(window._lastPackOrderNo).padStart(5,'0') : packOrderKey.slice(-6).toUpperCase()),
                     method: 'Wallet', status: 'progress',
                     isExclusivePack: true,
                     serviceCount: (checkoutItem.selectedServices || []).length,
@@ -7284,6 +7677,7 @@
             };
 
             const newOrderRef = push(ref(activeDb(), 'orders'));
+            const _no2 = await getNextOrderNo(); if (_no2) orderData.orderNo = _no2;
 
             // Fire all Firebase writes IN PARALLEL — much faster than sequential awaits
             await Promise.all([
@@ -7306,7 +7700,7 @@
                     product: checkoutItem.title || checkoutItem.planName || 'Service',
                     utr: utr,
                     link: targetLink || null,
-                    orderId: newOrderRef.key.slice(-6).toUpperCase(),
+                    orderId: fmtOrderId(newOrderRef.key, orderData).slice(1),
                     method: 'Wallet',
                     status: orderData.status,
                     notifyMsg: '✅ Wallet Payment Successful! Order Placed.'
@@ -7571,10 +7965,6 @@
         const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = "fixed"; textArea.style.left = "-999999px"; textArea.style.top = "-999999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
         try { const success = document.execCommand('copy'); if(success) showToast('UPI ID Copied!'); else showToast('Failed to copy'); } catch (err) { showToast('Failed to copy'); } textArea.remove();
     }
-    document.getElementById('chkUpiId').addEventListener('click', () => {
-        const upiText = document.getElementById('chkUpiId').textContent;
-        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(upiText).then(() => showToast('UPI ID Copied!')).catch(() => fallbackCopyText(upiText)); } else { fallbackCopyText(upiText); }
-    });
 
     // ── CART SYSTEM ────────────────────────────────────────────────────────
     let cart = []; // [{id, product, link, couponDiscount}]
@@ -7711,7 +8101,6 @@
 
         cartOrderId = generateUTR(12);
         const upiId = "Paytmqr6i3w0w@ptys";
-        document.getElementById('cartUpiId').textContent = upiId;
         document.getElementById('cartPayAmt').textContent = `₹${cartFinalAmt.toFixed(2)}`;
         document.getElementById('cartOrderIdDisplay').textContent = cartOrderId;
         const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent("SACHIN SAYSING RAUT")}&am=${cartFinalAmt}&cu=INR&tr=${cartOrderId}`;
@@ -7723,10 +8112,6 @@
         // Pre-warm proxies so verification is instant
         prewarmDualEngines('PREWARM');
     };
-    document.getElementById('cartUpiId').addEventListener('click', () => {
-        const t = document.getElementById('cartUpiId').textContent;
-        if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(() => showToast('UPI ID Copied!'));
-    });
 
     window.confirmCartPurchase = async () => {
         if (_guardOrder()) return;
@@ -7766,7 +8151,7 @@
                     ...gatewayMeta,
                 };
                 const newOrderRef = push(ref(activeDb(), 'orders'));
-                return set(newOrderRef, orderData).then(() => {
+                return getNextOrderNo().then(no => { if (no) orderData.orderNo = no; return set(newOrderRef, orderData); }).then(() => {
                     if (hasApi) callExternalApi(newOrderRef.key, item.product.apiUrl, item.product.apiKey,
                         item.product.serviceId, item.product.quantity, item.link);
                     return newOrderRef;
@@ -7851,6 +8236,7 @@
                 };
 
                 const newOrderRef = push(ref(activeDb(), 'orders'));
+                const _no4 = await getNextOrderNo(); if (_no4) orderData.orderNo = _no4;
                 await set(newOrderRef, orderData);
 
                 // Background API call for cart wallet items (atomic lock — prevents double SMM order)
@@ -8400,6 +8786,86 @@
       setTimeout(runAutoComplete,3000);
       setInterval(runAutoComplete,60000);
     })();
+</script>
+
+<!-- ══ SHARED SITE FOOTER LOGIC (display + navigation only; no Firebase / payment / order code touched) ══ -->
+<script>
+(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var footer = $('siteFooter');
+    if (!footer) return;
+
+    /* 1. Brand: mirror the header logo + name (both are filled in later from Firebase meta/brand) */
+    var nameEl = $('brandName'), logoEl = $('brandLogo'), sfLogo = $('sfLogo');
+    sfLogo.onerror = function () { this.classList.remove('visible'); };
+    function syncBrand() {
+        var n = ((nameEl && nameEl.textContent) || '').trim();
+        if (n) { $('sfName').textContent = n; $('sfCopyName').textContent = n; }
+        var src = logoEl ? logoEl.getAttribute('src') : '';
+        if (src) {
+            if (sfLogo.getAttribute('src') !== src) sfLogo.setAttribute('src', src);
+            sfLogo.classList.add('visible');
+        } else {
+            sfLogo.classList.remove('visible');
+        }
+    }
+    $('sfYear').textContent = new Date().getFullYear();
+
+    /* 2. Social / contact: reuse the links the site already configures (#contactLink, #updatesLink) */
+    function validHref(h) { return !!h && h !== '#' && /^(https?:|tg:)/i.test(h); }
+    function mirror(srcId, dstId, wrapperEl) {
+        var s = $(srcId), d = $(dstId);
+        if (!s || !d) return false;
+        var h = s.getAttribute('href');
+        var ok = validHref(h);
+        if (ok) d.setAttribute('href', h);
+        d.hidden = !ok;
+        if (wrapperEl) wrapperEl.hidden = !ok;
+        return ok;
+    }
+    function syncLinks() {
+        mirror('contactLink', 'sfContactLink', $('sfContactItem'));
+    }
+
+    syncBrand(); syncLinks();
+    if (window.MutationObserver) {
+        if (nameEl) new MutationObserver(syncBrand).observe(nameEl, { childList: true, characterData: true, subtree: true });
+        if (logoEl) new MutationObserver(syncBrand).observe(logoEl, { attributes: true, attributeFilter: ['src'] });
+        var contactEl = $('contactLink');
+        if (contactEl) new MutationObserver(syncLinks).observe(contactEl, { attributes: true, attributeFilter: ['href'] });
+    }
+
+    /* 3. Navigation: reuse the app's own switchTab / openCategory / openLegalModal */
+    function area() { return document.querySelector('.content-area'); }
+    function goTab(id) { if (typeof window.switchTab === 'function') window.switchTab(id); }
+    function scrollToEl(el) {
+        var a = area();
+        if (!a || !el) return;
+        var top = el.getBoundingClientRect().top - a.getBoundingClientRect().top + a.scrollTop - 12;
+        a.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+
+    footer.addEventListener('click', function (e) {
+        var t = e.target.closest('[data-service],[data-tab],[data-action],[data-legal]');
+        if (!t || !footer.contains(t)) return;
+
+        if (t.dataset.service) {
+            goTab('homeTab');
+            if (typeof window.openCategory === 'function') window.openCategory(t.dataset.service);
+        } else if (t.dataset.tab) {
+            goTab(t.dataset.tab);
+        } else if (t.dataset.legal) {
+            if (typeof window.openLegalModal === 'function') window.openLegalModal(t.dataset.legal);
+        } else if (t.dataset.action === 'hiw') {
+            goTab('profileTab');
+            scrollToEl(document.querySelector('.hiw-section'));
+        } else if (t.dataset.action === 'refer') {
+            goTab('profileTab');
+            var card = $('referEarnCard');
+            if (card && card.offsetParent !== null) scrollToEl(card);   // only when the logged-in view is showing
+        }
+    });
+})();
 </script>
 
 </body>
